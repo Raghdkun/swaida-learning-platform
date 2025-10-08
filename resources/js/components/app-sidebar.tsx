@@ -76,6 +76,11 @@ const mainNavItems: NavItem[] = [
         href: levelsIndex.url(),
         icon: TrendingUp,
     },
+    {
+        title: 'Payment Requests',
+        href: '/dashboard/course-payments',
+        icon: Folder,
+    }
 ];
 
 const footerNavItems: NavItem[] = [

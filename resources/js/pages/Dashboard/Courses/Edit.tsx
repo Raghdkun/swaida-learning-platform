@@ -107,7 +107,7 @@ export default function EditCourse({ course, categories, tags }: Props) {
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        put(courseUpdate.url(course.id), {
+        post(courseUpdate.url(course.id), {
             data: { ...data, tags: selectedTags },
             forceFormData: true,
         });

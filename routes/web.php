@@ -3,10 +3,32 @@
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\CourseController;
+use App\Http\Controllers\CoursePaymentRequestController;
 
 // Homepage with featured courses
 Route::get('/', [CourseController::class, 'featured'])->name('home');
+// Public endpoint used by your React form
+Route::post('/courses/payment', [CoursePaymentRequestController::class, 'store'])
+    ->name('courses.payment.store');
 
+// Success page (server-rendered with props)
+Route::get('/courses/payment/success/{course}', [CoursePaymentRequestController::class, 'success'])
+    ->name('courses.payment.success');
+
+// Dashboard CRUD (auth middleware as you see fit)
+Route::middleware(['auth', 'admin'])
+    ->prefix('dashboard')
+    ->name('dashboard.')
+    ->group(function () {
+        Route::get('course-payments/{coursePaymentRequest}/edit', [
+    CoursePaymentRequestController::class, 'edit'
+])->name('dashboard.course-payments.edit');
+        Route::get('/course-payments', [CoursePaymentRequestController::class, 'index'])->name('course-payments.index');
+        Route::get('/course-payments/{coursePaymentRequest}', [CoursePaymentRequestController::class, 'show'])->name('course-payments.show');
+        Route::post('/course-payments/{coursePaymentRequest}', [CoursePaymentRequestController::class, 'update'])->name('course-payments.update');
+        Route::delete('/course-payments/{coursePaymentRequest}', [CoursePaymentRequestController::class, 'destroy'])->name('course-payments.destroy');
+        Route::delete('/course-payments-bulk-destroy', [CoursePaymentRequestController::class, 'bulkDestroy'])->name('course-payments.bulk-destroy');
+    });
 // Course routes
 Route::prefix('courses')->name('courses.')->group(function () {
     Route::get('/', [CourseController::class, 'index'])->name('index');
@@ -14,7 +36,6 @@ Route::prefix('courses')->name('courses.')->group(function () {
     Route::get('/{id}', [CourseController::class, 'show'])->name('show')->where('id', '[0-9]+');
     Route::get('/{id}/payment', [CourseController::class, 'payment'])->name('payment')->where('id', '[0-9]+');
     Route::post('/{id}/payment', [CourseController::class, 'submitPayment'])->name('payment.submit')->where('id', '[0-9]+');
-    Route::get('/payment/success', [CourseController::class, 'paymentSuccess'])->name('payment.success');
 });
 
 // API routes for AJAX requests
@@ -23,7 +44,7 @@ Route::prefix('api')->name('api.')->group(function () {
     Route::get('/filter-options', [CourseController::class, 'filterOptions'])->name('filter-options');
 });
 
-Route::middleware(['auth', 'verified', 'admin'])->group(function () {
+Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('dashboard', function () {
         return Inertia::render('dashboard');
     })->name('dashboard');

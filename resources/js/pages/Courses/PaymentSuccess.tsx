@@ -28,7 +28,7 @@ export default function PaymentSuccess({ auth, course, submissionData }: Payment
                     {/* Back button */}
                     <div className="mb-6">
                         <Button variant="outline" asChild>
-                            <Link href={route('courses.index')} className="inline-flex items-center gap-2">
+                            <Link href={`/courses`} className="inline-flex items-center gap-2">
                                 <ArrowLeft className="h-4 w-4" />
                                 <span className="hidden sm:inline">Back to Courses</span>
                                 <span className="sm:hidden">Back</span>

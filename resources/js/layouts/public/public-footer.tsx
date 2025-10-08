@@ -7,28 +7,28 @@ export function PublicFooter() {
     const footerLinks = {
         platform: [
             { name: 'Browse Courses', href: '/courses' },
-            { name: 'Categories', href: '/courses?category=' },
+            // { name: 'Categories', href: '/courses?category=' },
             { name: 'Featured', href: '/' },
         ],
-        company: [
-            { name: 'About Us', href: '/about' },
-            { name: 'Contact', href: '/contact' },
-            { name: 'Privacy Policy', href: '/privacy' },
-            { name: 'Terms of Service', href: '/terms' },
-        ],
+        // company: [
+        //     // { name: 'About Us', href: '/about' },
+        //     // { name: 'Contact', href: '/contact' },
+        //     // { name: 'Privacy Policy', href: '/privacy' },
+        //     // { name: 'Terms of Service', href: '/terms' },
+        // ],
         support: [
             { name: 'Help Center', href: '/help' },
-            { name: 'Community', href: '/community' },
-            { name: 'FAQ', href: '/faq' },
+            // { name: 'Community', href: '/community' },
+            // { name: 'FAQ', href: '/faq' },
         ],
     };
 
-    const socialLinks = [
-        { name: 'GitHub', href: '#', icon: Github },
-        { name: 'Twitter', href: '#', icon: Twitter },
-        { name: 'LinkedIn', href: '#', icon: Linkedin },
-        { name: 'Email', href: 'mailto:contact@swaida.com', icon: Mail },
-    ];
+    // const socialLinks = [
+    //     // { name: 'GitHub', href: '#', icon: Github },
+    //     // { name: 'Twitter', href: '#', icon: Twitter },
+    //     // { name: 'LinkedIn', href: '#', icon: Linkedin },
+    //     // { name: 'Email', href: 'mailto:contact@swaida.com', icon: Mail },
+    // ];
 
     return (
         <footer className="bg-background border-t border-border">
@@ -48,7 +48,7 @@ export function PublicFooter() {
                                 Discover and explore the best online courses from top platforms. 
                                 Learn new skills, advance your career, and achieve your goals.
                             </p>
-                            <div className="flex space-x-4">
+                            {/* <div className="flex space-x-4">
                                 {socialLinks.map((social) => {
                                     const Icon = social.icon;
                                     return (
@@ -62,7 +62,7 @@ export function PublicFooter() {
                                         </a>
                                     );
                                 })}
-                            </div>
+                            </div> */}
                         </div>
 
                         {/* Platform Links */}
@@ -84,7 +84,7 @@ export function PublicFooter() {
                             </ul>
                         </div>
 
-                        {/* Company Links */}
+                        {/* Company Links
                         <div>
                             <h3 className="text-sm font-semibold uppercase tracking-wider mb-4 text-foreground">
                                 Company
@@ -101,7 +101,7 @@ export function PublicFooter() {
                                     </li>
                                 ))}
                             </ul>
-                        </div>
+                        </div> */}
 
                         {/* Support Links */}
                         <div>
@@ -130,7 +130,7 @@ export function PublicFooter() {
                         <p className="text-muted-foreground text-sm">
                             © {currentYear} Swaida Learning Platform. All rights reserved.
                         </p>
-                        <div className="flex space-x-6 mt-4 md:mt-0">
+                        {/* <div className="flex space-x-6 mt-4 md:mt-0">
                             <Link
                                 href="/privacy"
                                 className="text-muted-foreground hover:text-foreground text-sm transition-colors duration-200"
@@ -149,7 +149,7 @@ export function PublicFooter() {
                             >
                                 Cookies
                             </Link>
-                        </div>
+                        </div> */}
                     </div>
                 </div>
             </div>

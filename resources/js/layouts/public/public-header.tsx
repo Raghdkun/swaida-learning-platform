@@ -16,7 +16,6 @@ export function PublicHeader({ auth }: PublicHeaderProps) {
     const navigation = [
         { name: 'Home', href: '/' },
         { name: 'Courses', href: '/courses' },
-        { name: 'Categories', href: '/courses?category=' },
     ];
 
     return (
@@ -46,7 +45,7 @@ export function PublicHeader({ auth }: PublicHeaderProps) {
                         ))}
                     </div>
 
-                    {/* Auth Buttons */}
+                    {/* Auth Buttons
                     <div className="hidden md:flex md:items-center md:space-x-3 lg:space-x-4">
                         {auth?.user ? (
                             <div className="flex items-center space-x-3 lg:space-x-4">
@@ -81,7 +80,7 @@ export function PublicHeader({ auth }: PublicHeaderProps) {
                                 </Link>
                             </div>
                         )}
-                    </div>
+                    </div> */}
 
                     {/* Mobile menu button */}
                     <div className="md:hidden">
@@ -115,7 +114,7 @@ export function PublicHeader({ auth }: PublicHeaderProps) {
                                 </Link>
                             ))}
                             
-                            <div className="border-t border-border pt-4 mt-4">
+                            {/* <div className="border-t border-border pt-4 mt-4">
                                 {auth?.user ? (
                                     <div className="space-y-1">
                                         <div className="px-3 py-2 text-sm text-muted-foreground">
@@ -156,7 +155,7 @@ export function PublicHeader({ auth }: PublicHeaderProps) {
                                         </Link>
                                     </div>
                                 )}
-                            </div>
+                            </div> */}
                         </div>
                     </div>
                 )}
