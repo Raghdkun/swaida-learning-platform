@@ -25,6 +25,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->alias([
             'admin' => AdminMiddleware::class,
+            'force.sponsor.password.change' => \App\Http\Middleware\ForceSponsorPasswordChange::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

@@ -17,16 +17,18 @@ interface Props {
   onFiltersChange: (filters: Partial<CourseFilters>) => void;
   onResetFilters: () => void;
   loading?: boolean;
+  variant?: 'sidebar' | 'full';
 }
 
-function CourseFiltersComponent({
+function SidebarCourseFilters({
   filters,
   filterOptions,
   onFiltersChange,
   onResetFilters,
   loading = false,
+  variant = 'sidebar',
 }: Props) {
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(true); // Default open for sidebar
 
   const handleSearchChange = (value: string) => onFiltersChange({ search: value || undefined });
 
@@ -69,6 +71,211 @@ function CourseFiltersComponent({
 
   const activeCount = getActiveFiltersCount();
 
+  // Sidebar variant - simplified and optimized for narrow layout
+  if (variant === 'sidebar') {
+    return (
+      <div className="space-y-4">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Filter className="h-5 w-5 text-primary" />
+            <h3 className="font-semibold text-lg">Filters</h3>
+          </div>
+          {activeCount > 0 && (
+            <Badge variant="secondary" className="text-xs">
+              {activeCount}
+            </Badge>
+          )}
+        </div>
+
+        {/* Search */}
+        <div className="space-y-2">
+          <Label className="text-sm font-medium">Search</Label>
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
+            <Input
+              placeholder="Search courses..."
+              value={filters?.search || ''}
+              onChange={(e) => handleSearchChange(e.target.value)}
+              className="pl-9 h-10 text-sm border focus:border-primary/50"
+              disabled={loading}
+            />
+          </div>
+        </div>
+
+        {/* Quick Filters */}
+        <div className="space-y-4">
+          {/* Course Type */}
+          <div className="space-y-2">
+            <Label className="text-sm font-medium">Course Type</Label>
+            <Select value={filters?.course_type || 'all'} onValueChange={handleCourseTypeChange} disabled={loading}>
+              <SelectTrigger className="h-9 text-sm">
+                <SelectValue placeholder="All types" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Courses</SelectItem>
+                <SelectItem value="free">
+                  <div className="flex items-center justify-between w-full">
+                    <span>Free</span>
+                    {!!filterOptions?.course_types?.free && (
+                      <Badge variant="secondary" className="text-xs ml-2">{filterOptions.course_types.free}</Badge>
+                    )}
+                  </div>
+                </SelectItem>
+                <SelectItem value="paid">
+                  <div className="flex items-center justify-between w-full">
+                    <span>Paid</span>
+                    {!!filterOptions?.course_types?.paid && (
+                      <Badge variant="secondary" className="text-xs ml-2">{filterOptions.course_types.paid}</Badge>
+                    )}
+                  </div>
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Category */}
+          <div className="space-y-2">
+            <Label className="text-sm font-medium">Category</Label>
+            <Select
+              value={filters?.category || 'all'}
+              onValueChange={handleCategoryChange}
+              disabled={loading || !filterOptions?.categories?.length}
+            >
+              <SelectTrigger className="h-9 text-sm">
+                <SelectValue placeholder="All categories" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Categories</SelectItem>
+                {filterOptions?.categories?.map((c) => (
+                  <SelectItem key={c.id} value={c.slug}>
+                    <div className="flex items-center justify-between w-full">
+                      <span className="truncate">{c.name}</span>
+                      {typeof c.courses_count === 'number' && (
+                        <Badge variant="secondary" className="text-xs ml-2 shrink-0">{c.courses_count}</Badge>
+                      )}
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Platform */}
+          <div className="space-y-2">
+            <Label className="text-sm font-medium">Platform</Label>
+            <Select
+              value={filters?.platform || 'all'}
+              onValueChange={handlePlatformChange}
+              disabled={loading || !filterOptions?.platforms?.length}
+            >
+              <SelectTrigger className="h-9 text-sm">
+                <SelectValue placeholder="All platforms" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Platforms</SelectItem>
+                {filterOptions?.platforms?.map((p) => (
+                  <SelectItem key={p} value={p}>{p}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Level */}
+          <div className="space-y-2">
+            <Label className="text-sm font-medium">Level</Label>
+            <Select value={filters?.level || 'all'} onValueChange={handleLevelChange} disabled={loading}>
+              <SelectTrigger className="h-9 text-sm">
+                <SelectValue placeholder="All levels" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Levels</SelectItem>
+                <SelectItem value="beginner">Beginner</SelectItem>
+                <SelectItem value="intermediate">Intermediate</SelectItem>
+                <SelectItem value="advanced">Advanced</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        <Separator />
+
+        {/* Additional Options */}
+        <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+          <CollapsibleTrigger asChild>
+            <Button variant="ghost" className="w-full justify-between h-8 text-sm font-normal">
+              <span>More options</span>
+              <ChevronDown className={`h-4 w-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+            </Button>
+          </CollapsibleTrigger>
+
+          <CollapsibleContent className="space-y-4 pt-2">
+            {/* Certificate */}
+            <div className="space-y-2">
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="certificate-sidebar"
+                  checked={!!filters?.have_cert}
+                  onCheckedChange={(v: boolean) => handleCertificateChange(!!v)}
+                  disabled={loading}
+                  className="h-4 w-4"
+                />
+                <Label htmlFor="certificate-sidebar" className="text-sm font-medium cursor-pointer flex items-center gap-1">
+                  <Award className="h-3 w-3" />
+                  With certificate
+                </Label>
+              </div>
+            </div>
+
+            {/* Tags */}
+            {!!filterOptions?.tags?.length && (
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">Popular Tags</Label>
+                <div className="flex flex-wrap gap-1.5 max-h-32 overflow-y-auto p-1">
+                  {filterOptions.tags.map((tag) => {
+                    const active = !!filters?.tags?.includes(tag.slug);
+                    return (
+                      <Badge
+                        key={tag.id}
+                        variant={active ? 'default' : 'outline'}
+                        className={`cursor-pointer text-xs px-2 py-1 ${
+                          active 
+                            ? 'bg-primary text-primary-foreground' 
+                            : 'hover:bg-primary/10 hover:border-primary/50'
+                        }`}
+                        onClick={() => handleTagToggle(tag.slug)}
+                      >
+                        {tag.name}
+                        {typeof tag.courses_count === 'number' && (
+                          <span className="ml-1 text-xs opacity-70">({tag.courses_count})</span>
+                        )}
+                      </Badge>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </CollapsibleContent>
+        </Collapsible>
+
+        {/* Reset Button */}
+        {activeCount > 0 && (
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={onResetFilters} 
+            className="w-full border-dashed"
+            disabled={loading}
+          >
+            <X className="h-4 w-4 mr-2" />
+            Clear Filters
+          </Button>
+        )}
+      </div>
+    );
+  }
+
+  // Original full-width variant (unchanged)
   return (
     <>
       <div className="space-y-6">
@@ -166,7 +373,7 @@ function CourseFiltersComponent({
                     </Select>
                   </div>
 
-                  {/* Category (slug or id string; backend normalizes) */}
+                  {/* Category */}
                   <div className="space-y-3">
                     <Label className="text-sm font-semibold flex items-center gap-2">
                       <BookOpen className="h-4 w-4 text-primary" />
@@ -373,4 +580,4 @@ function CourseFiltersComponent({
   );
 }
 
-export { CourseFiltersComponent as CourseFilters };
+export default SidebarCourseFilters;

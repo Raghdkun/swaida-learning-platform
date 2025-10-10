@@ -17,7 +17,7 @@ import { index as categoriesIndex, create as categoriesCreate } from '@/routes/d
 import { index as levelsIndex } from '@/routes/dashboard/levels';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
-import { BookOpen, Folder, LayoutGrid, Tag, FolderOpen, TrendingUp } from 'lucide-react';
+import { BookOpen, Folder, LayoutGrid, Tag, FolderOpen, TrendingUp, CircleDollarSign, DollarSign } from 'lucide-react';
 import AppLogo from './app-logo';
 
 const mainNavItems: NavItem[] = [
@@ -79,7 +79,12 @@ const mainNavItems: NavItem[] = [
     {
         title: 'Payment Requests',
         href: '/dashboard/course-payments',
-        icon: Folder,
+        icon: CircleDollarSign,
+    },
+    {
+        title: 'Sponsors',
+        href: '/dashboard/sponsors',
+        icon: DollarSign,
     }
 ];
 

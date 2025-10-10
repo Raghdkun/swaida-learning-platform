@@ -40,6 +40,7 @@ return [
             'driver' => 'session',
             'provider' => 'users',
         ],
+        'sponsor' => ['driver' => 'session', 'provider' => 'sponsors'],
     ],
 
     /*
@@ -64,6 +65,7 @@ return [
             'driver' => 'eloquent',
             'model' => env('AUTH_MODEL', App\Models\User::class),
         ],
+    'sponsors' => ['driver' => 'eloquent', 'model' => App\Models\Sponsor::class],
 
         // 'users' => [
         //     'driver' => 'database',
@@ -97,6 +99,8 @@ return [
             'expire' => 60,
             'throttle' => 60,
         ],
+        'sponsors' => ['provider' => 'sponsors', 'table' => 'password_reset_tokens', 'expire' => 60],
+
     ],
 
     /*

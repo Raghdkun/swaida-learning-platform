@@ -4,10 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Services\CourseService;
 use Illuminate\Http\Request;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Validator;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -18,133 +14,96 @@ class CourseController extends Controller
     ) {}
 
     /**
-     * Display a listing of courses
+     * Display a listing of courses (Inertia page)
      */
     public function index(Request $request): Response
     {
         $filters = $this->courseService->sanitizeFilters($request->all());
-        $perPage = $request->get('per_page', 12);
-        
+        $perPage = (int) $request->get('per_page', 12);
+
         $data = $this->courseService->getCourses($filters, $perPage);
-        
+
         return Inertia::render('Courses/Index', [
-            'courses' => $data['courses'],
-            'filters' => $data['filters'],
-            'meta' => $data['meta'],
-            'currentFilters' => $filters,
+            'courses'          => [
+                'data' => $data['courses']->items(),
+                'meta' => [
+                    'total'        => $data['meta']['total'],
+                    'per_page'     => $data['meta']['per_page'],
+                    'current_page' => $data['meta']['current_page'],
+                    'last_page'    => $data['meta']['last_page'],
+                    'from'         => $data['meta']['from'],
+                    'to'           => $data['meta']['to'],
+                ],
+            ],
+            'categories'       => $data['filters']['categories'],
+            'filters'          => $data['filters'], // FilterOptions for the UI component
+            'current_filters'  => $filters,
         ]);
     }
 
     /**
-     * Display the specified course
-     */
-    public function show(int $id): Response
-    {
-        $data = $this->courseService->getCourseDetails($id);
-        
-        if (!$data) {
-            abort(404, 'Course not found');
-        }
-        
-        return Inertia::render('Courses/Show', [
-            'course' => $data['course'],
-            'relatedCourses' => $data['related_courses'],
-        ]);
-    }
-
-    /**
-     * Search courses
-     */
-    public function search(Request $request): Response
-    {
-        $query = $request->get('q', '');
-        $filters = $this->courseService->sanitizeFilters($request->all());
-        $perPage = $request->get('per_page', 12);
-        
-        $data = $this->courseService->searchCourses($query, $filters, $perPage);
-        
-        return Inertia::render('Courses/Search', [
-            'courses' => $data['courses'],
-            'filters' => $data['filters'],
-            'meta' => $data['meta'],
-            'currentFilters' => $filters,
-            'searchQuery' => $query,
-        ]);
-    }
-
-    /**
-     * Get featured courses for homepage
-     */
-    public function featured(): Response
-    {
-        $featuredCourses = $this->courseService->getFeaturedCourses(8);
-        $filterOptions = $this->courseService->getFilterOptions();
-        $stats = $this->courseService->getDashboardStats();
-        
-        return Inertia::render('Home', [
-            'featuredCourses' => $featuredCourses,
-            'filterOptions' => $filterOptions,
-            'stats' => $stats,
-        ]);
-    }
-
-    /**
-     * API endpoint for course data (for AJAX requests)
+     * API endpoint for async filtering/pagination
      */
     public function api(Request $request)
     {
         $filters = $this->courseService->sanitizeFilters($request->all());
-        $perPage = $request->get('per_page', 12);
-        
+        $perPage = (int) $request->get('per_page', 12);
+
         $data = $this->courseService->getCourses($filters, $perPage);
-        
-        // Return the courses data in the format expected by the frontend
+        $paginator = $data['courses'];
+
         return response()->json([
-            'data' => $data['courses']->items(),
-            'meta' => $data['meta'],
-            'links' => [
-                'first' => $data['courses']->url(1),
-                'last' => $data['courses']->url($data['courses']->lastPage()),
-                'prev' => $data['courses']->previousPageUrl(),
-                'next' => $data['courses']->nextPageUrl(),
+            'data'  => $paginator->items(),
+            'meta'  => [
+                'total'        => $paginator->total(),
+                'per_page'     => $paginator->perPage(),
+                'current_page' => $paginator->currentPage(),
+                'last_page'    => $paginator->lastPage(),
+                'from'         => $paginator->firstItem(),
+                'to'           => $paginator->lastItem(),
             ],
+            'links' => [
+                'first' => $paginator->url(1),
+                'last'  => $paginator->url($paginator->lastPage()),
+                'prev'  => $paginator->previousPageUrl(),
+                'next'  => $paginator->nextPageUrl(),
+            ],
+            // Optional: return filter options if you want to live-update counts
             'filters' => $data['filters'],
         ]);
     }
 
     /**
-     * API endpoint for filter options
+     * API: filter options (platforms, levels, etc.)
      */
     public function filterOptions()
     {
-        $filterOptions = $this->courseService->getFilterOptions();
-        
-        return response()->json($filterOptions);
+        return response()->json($this->courseService->getFilterOptions());
     }
 
-    /**
-     * Show payment form for a course
-     */
-    public function payment(int $id): Response|RedirectResponse
+    public function show(int $id): Response
     {
         $data = $this->courseService->getCourseDetails($id);
-        
         if (!$data) {
             abort(404, 'Course not found');
         }
 
-        $course = $data['course'];
-        
-        // Redirect to course page if it's free
-        if (!$course->is_paid) {
-            return redirect()->route('courses.show', $id)
-                ->with('message', 'This course is free and does not require payment.');
-        }
-        
-        return Inertia::render('Courses/Payment', [
-            'course' => $course,
+        return Inertia::render('Courses/Show', [
+            'course'          => $data['course'],
+            'relatedCourses'  => $data['related_courses'],
         ]);
     }
 
+    public function featured(): Response
+    {
+        $featuredCourses = $this->courseService->getFeaturedCourses(8);
+        $filterOptions   = $this->courseService->getFilterOptions();
+        $stats           = $this->courseService->getDashboardStats();
 
+        return Inertia::render('Home', [
+            'featuredCourses' => $featuredCourses,
+            'filterOptions'   => $filterOptions,
+            'stats'           => $stats,
+        ]);
+    }
 }

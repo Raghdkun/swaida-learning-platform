@@ -23,6 +23,7 @@ class Course extends Model
 
     protected $casts = [
         'have_cert' => 'boolean',
+        'price'     => 'float',
     ];
 
     protected $appends = [
@@ -31,41 +32,26 @@ class Course extends Model
         'formatted_price',
     ];
 
-    /**
-     * Get the image URL attribute.
-     */
     public function getImageUrlAttribute(): ?string
     {
         return $this->image ? asset('storage/' . $this->image) : null;
     }
 
-    /**
-     * Check if the course is paid.
-     */
     public function getIsPaidAttribute(): bool
     {
         return $this->price !== null && $this->price > 0;
     }
 
-    /**
-     * Get formatted price.
-     */
     public function getFormattedPriceAttribute(): ?string
     {
-        return $this->price ? number_format($this->price, 0) . 'USD' : null;
+        return $this->price ? number_format($this->price, 0) . ' USD' : null;
     }
 
-    /**
-     * Get the category that owns the course.
-     */
     public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class);
     }
 
-    /**
-     * Get the tags that belong to the course.
-     */
     public function tags(): BelongsToMany
     {
         return $this->belongsToMany(Tag::class);

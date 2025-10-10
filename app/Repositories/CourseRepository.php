@@ -5,85 +5,123 @@ namespace App\Repositories;
 use App\Models\Course;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
-use Spatie\QueryBuilder\QueryBuilder;
 
 class CourseRepository
 {
     /**
      * Get paginated courses with filters and search
+     *
+     * Expects normalized filter keys:
+     * - search: string
+     * - category_id: int
+     * - platform: string
+     * - level: string (beginner|intermediate|advanced)
+     * - have_cert: bool
+     * - tags: array<int> (tag IDs)
+     * - course_type: 'free'|'paid'
+     * - min_price: float
+     * - max_price: float
+     * - sort: 'newest'|'oldest'|'price-low'|'price-high'|'title'|'popularity'
      */
     public function getPaginatedCourses(array $filters = [], int $perPage = 12): LengthAwarePaginator
     {
-        return QueryBuilder::for(Course::class)
-            ->allowedFilters([
-                'title',
-                'platform',
-                'level',
-                'have_cert',
-                'category.name',
-                'tags.name',
-                'price',
-            ])
-            ->allowedSorts([
-                'title',
-                'platform',
-                'level',
-                'created_at',
-                'duration',
-                'price',
-            ])
-            ->with(['category', 'tags'])
-            ->when(isset($filters['search']), function (Builder $query) use ($filters) {
-                $search = $filters['search'];
-                $query->where(function (Builder $q) use ($search) {
-                    $q->where('title', 'like', "%{$search}%")
-                      ->orWhere('description', 'like', "%{$search}%")
-                      ->orWhereHas('category', function (Builder $categoryQuery) use ($search) {
-                          $categoryQuery->where('name', 'like', "%{$search}%");
-                      })
-                      ->orWhereHas('tags', function (Builder $tagQuery) use ($search) {
-                          $tagQuery->where('name', 'like', "%{$search}%");
-                      });
-                });
-            })
-            ->when(isset($filters['category_id']), function (Builder $query) use ($filters) {
-                $query->where('category_id', $filters['category_id']);
-            })
-            ->when(isset($filters['platform']), function (Builder $query) use ($filters) {
-                $query->where('platform', $filters['platform']);
-            })
-            ->when(isset($filters['level']), function (Builder $query) use ($filters) {
-                $query->where('level', $filters['level']);
-            })
-            ->when(isset($filters['have_cert']), function (Builder $query) use ($filters) {
-                $query->where('have_cert', $filters['have_cert']);
-            })
-            ->when(isset($filters['tags']), function (Builder $query) use ($filters) {
-                $tagIds = is_array($filters['tags']) ? $filters['tags'] : [$filters['tags']];
+        $query = Course::query()
+            ->with(['category', 'tags']);
+
+        // Search across title, description, category name, tag name
+        if (!empty($filters['search'])) {
+            $search = $filters['search'];
+            $query->where(function (Builder $q) use ($search) {
+                $q->where('title', 'like', "%{$search}%")
+                    ->orWhere('description', 'like', "%{$search}%")
+                    ->orWhereHas('category', function (Builder $categoryQuery) use ($search) {
+                        $categoryQuery->where('name', 'like', "%{$search}%");
+                    })
+                    ->orWhereHas('tags', function (Builder $tagQuery) use ($search) {
+                        $tagQuery->where('name', 'like', "%{$search}%");
+                    });
+            });
+        }
+
+        // Category ID (normalized in service)
+        if (!empty($filters['category_id'])) {
+            $query->where('category_id', (int) $filters['category_id']);
+        }
+
+        // Simple equality filters
+        if (!empty($filters['platform'])) {
+            $query->where('platform', $filters['platform']);
+        }
+        if (!empty($filters['level'])) {
+            $query->where('level', $filters['level']);
+        }
+
+        // Boolean filter
+        if (array_key_exists('have_cert', $filters)) {
+            $query->where('have_cert', (bool) $filters['have_cert']);
+        }
+
+        // Tags as ID array (normalized in service)
+        if (!empty($filters['tags']) && is_array($filters['tags'])) {
+            $tagIds = array_filter(array_map('intval', $filters['tags']));
+            if (!empty($tagIds)) {
                 $query->whereHas('tags', function (Builder $tagQuery) use ($tagIds) {
                     $tagQuery->whereIn('tags.id', $tagIds);
                 });
-            })
-            ->when(isset($filters['course_type']), function (Builder $query) use ($filters) {
+            }
+        }
+
+        // Free/Paid (proper grouping)
+        if (!empty($filters['course_type'])) {
+            $query->where(function (Builder $q) use ($filters) {
                 if ($filters['course_type'] === 'free') {
-                    $query->whereNull('price')->orWhere('price', '<=', 0);
+                    $q->whereNull('price')->orWhere('price', '<=', 0);
                 } elseif ($filters['course_type'] === 'paid') {
-                    $query->whereNotNull('price')->where('price', '>', 0);
+                    $q->whereNotNull('price')->where('price', '>', 0);
                 }
-            })
-            ->when(isset($filters['min_price']), function (Builder $query) use ($filters) {
-                $query->where('price', '>=', $filters['min_price']);
-            })
-            ->when(isset($filters['max_price']), function (Builder $query) use ($filters) {
-                $query->where('price', '<=', $filters['max_price']);
-            })
-            ->paginate($perPage);
+            });
+        }
+
+        // Price range
+        if (isset($filters['min_price']) && is_numeric($filters['min_price'])) {
+            $query->where('price', '>=', (float) $filters['min_price']);
+        }
+        if (isset($filters['max_price']) && is_numeric($filters['max_price'])) {
+            $query->where('price', '<=', (float) $filters['max_price']);
+        }
+
+        // Sorting
+        switch ($filters['sort'] ?? 'newest') {
+            case 'oldest':
+                $query->orderBy('created_at', 'asc');
+                break;
+            case 'price-low':
+                $query->orderByRaw('CASE WHEN price IS NULL THEN 1 ELSE 0 END ASC')->orderBy('price', 'asc');
+                break;
+            case 'price-high':
+                $query->orderByRaw('CASE WHEN price IS NULL THEN 1 ELSE 0 END ASC')->orderBy('price', 'desc');
+                break;
+            case 'title':
+                $query->orderBy('title', 'asc');
+                break;
+            case 'popularity':
+                // If you later add a "popularity" metric, adjust here.
+                // Fallback to newest for now.
+                $query->orderBy('created_at', 'desc');
+                break;
+            case 'newest':
+            default:
+                $query->orderBy('created_at', 'desc');
+                break;
+        }
+
+        return $query->paginate($perPage);
     }
 
     /**
      * Get course by ID with relationships
      */
-    public function findWithRelations(int $id): ?Course
+    public function findWithRelations(int $id): ?\App\Models\Course
     {
         return Course::with(['category', 'tags'])->find($id);
     }
@@ -93,8 +131,9 @@ class CourseRepository
      */
     public function getUniquePlatforms(): array
     {
-        return Course::distinct('platform')
-            ->whereNotNull('platform')
+        return Course::whereNotNull('platform')
+            ->distinct()
+            ->orderBy('platform')
             ->pluck('platform')
             ->toArray();
     }
@@ -104,8 +143,9 @@ class CourseRepository
      */
     public function getUniqueLevels(): array
     {
-        return Course::distinct('level')
-            ->whereNotNull('level')
+        return Course::whereNotNull('level')
+            ->distinct()
+            ->orderBy('level')
             ->pluck('level')
             ->toArray();
     }
@@ -126,7 +166,7 @@ class CourseRepository
     }
 
     /**
-     * Get featured courses (you can customize this logic)
+     * Get featured courses (example logic)
      */
     public function getFeaturedCourses(int $limit = 6): \Illuminate\Database\Eloquent\Collection
     {
@@ -148,8 +188,8 @@ class CourseRepository
             ->first();
 
         return [
-            'min_price' => $prices->min_price ?? 0,
-            'max_price' => $prices->max_price ?? 0,
+            'min_price' => (float) ($prices->min_price ?? 0),
+            'max_price' => (float) ($prices->max_price ?? 0),
         ];
     }
 
@@ -158,12 +198,12 @@ class CourseRepository
      */
     public function getCourseTypeCounts(): array
     {
-        $freeCourses = Course::whereNull('price')->orWhere('price', '<=', 0)->count();
-        $paidCourses = Course::whereNotNull('price')->where('price', '>', 0)->count();
+        $free = Course::where(function (Builder $q) {
+            $q->whereNull('price')->orWhere('price', '<=', 0);
+        })->count();
 
-        return [
-            'free' => $freeCourses,
-            'paid' => $paidCourses,
-        ];
+        $paid = Course::whereNotNull('price')->where('price', '>', 0)->count();
+
+        return ['free' => $free, 'paid' => $paid];
     }
 }

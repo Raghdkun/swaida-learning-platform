@@ -42,6 +42,18 @@ class CategoryRepository
     }
 
     /**
+     * Return the ID for a given slug (or null if not found)
+     */
+    public function findIdBySlug(?string $slug): ?int
+    {
+        if (!$slug) {
+            return null;
+        }
+
+        return Category::where('slug', $slug)->value('id');
+    }
+
+    /**
      * Get categories that have courses
      */
     public function getCategoriesWithCourses(): Collection

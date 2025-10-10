@@ -42,6 +42,21 @@ class TagRepository
     }
 
     /**
+     * Find many tag IDs by their slugs
+     *
+     * @param  array<int,string> $slugs
+     * @return array<int,int>
+     */
+    public function findIdsBySlugs(array $slugs): array
+    {
+        if (empty($slugs)) {
+            return [];
+        }
+
+        return Tag::whereIn('slug', $slugs)->pluck('id')->all();
+    }
+
+    /**
      * Get tags that have courses
      */
     public function getTagsWithCourses(): Collection

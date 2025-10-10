@@ -4,7 +4,11 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\CourseController;
 use App\Http\Controllers\CoursePaymentRequestController;
-
+use App\Http\Controllers\SponsorController;
+use App\Http\Controllers\SponsorAllocationController;
+use App\Http\Controllers\SponsorAuthController;
+use App\Http\Controllers\SponsorPortalController;
+use App\Http\Controllers\SponsorPasswordController;
 // Homepage with featured courses
 Route::get('/', [CourseController::class, 'featured'])->name('home');
 // Public endpoint used by your React form
@@ -108,7 +112,45 @@ Route::middleware(['auth', 'admin'])->group(function () {
         Route::get('/', [App\Http\Controllers\DashboardLevelController::class, 'index'])->name('index');
         Route::get('/{level}', [App\Http\Controllers\DashboardLevelController::class, 'show'])->name('show');
     });
-});
 
+    Route::prefix('dashboard')->name('dashboard.')->group(function () {
+
+    // Sponsors CRUD
+    Route::get('/sponsors', [SponsorController::class, 'index'])->name('sponsors.index');
+    Route::get('/sponsors/create', [SponsorController::class, 'create'])->name('sponsors.create');
+    Route::post('/sponsors', [SponsorController::class, 'store'])->name('sponsors.store');
+    Route::get('/sponsors/{sponsor}', [SponsorController::class, 'show'])->name('sponsors.show');
+    Route::get('/sponsors/{sponsor}/edit', [SponsorController::class, 'edit'])->name('sponsors.edit');
+    Route::put('/sponsors/{sponsor}', [SponsorController::class, 'update'])->name('sponsors.update');
+    Route::delete('/sponsors/{sponsor}', [SponsorController::class, 'destroy'])->name('sponsors.destroy');
+
+    // Funds management (top-up / manual adjustments)
+    Route::post('/sponsors/{sponsor}/funds', [SponsorController::class, 'addFunds'])->name('sponsors.funds');
+
+    // Allocations (nested under sponsor)
+    Route::post('/sponsors/{sponsor}/allocations', [SponsorAllocationController::class, 'store'])->name('sponsors.allocations.store');
+    Route::put('/sponsors/{sponsor}/allocations/{allocation}', [SponsorAllocationController::class, 'update'])->name('sponsors.allocations.update');
+    Route::delete('/sponsors/{sponsor}/allocations/{allocation}', [SponsorAllocationController::class, 'destroy'])->name('sponsors.allocations.destroy');
+});
+});
+Route::prefix('sponsor')->name('sponsor.')->group(function () {
+    Route::middleware('guest:sponsor')->group(function () {
+        Route::get('/login',  [SponsorAuthController::class, 'showLogin'])->name('login');
+        Route::post('/login', [SponsorAuthController::class, 'login'])->name('login.attempt');
+    });
+
+    Route::middleware(['auth:sponsor'])->group(function () {
+        Route::post('/logout', [SponsorAuthController::class, 'logout'])->name('logout');
+
+        // password change flow
+        Route::get('/change-password', [SponsorPasswordController::class, 'edit'])->name('password.edit');
+        Route::put('/change-password', [SponsorPasswordController::class, 'update'])->name('password.update');
+
+        // all other portal pages must be blocked until password change:
+        Route::middleware('force.sponsor.password.change')->group(function () {
+            Route::get('/', SponsorPortalController::class)->name('portal');
+        });
+    });
+});
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';
