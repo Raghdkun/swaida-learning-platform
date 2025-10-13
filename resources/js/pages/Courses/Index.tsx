@@ -12,7 +12,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import {
   BookOpen,
-  Filter,
+  Filter as FilterIcon,
   Search,
   Star,
   Users,
@@ -22,6 +22,7 @@ import {
   X,
   ChevronDown,
 } from 'lucide-react';
+import { useTranslation } from '@/hooks/use-translation';
 
 export interface CoursesIndexProps {
   courses: { data: Course[]; meta: PaginationMeta };
@@ -31,6 +32,8 @@ export interface CoursesIndexProps {
 }
 
 export default function Index({ courses, categories, filters, current_filters }: CoursesIndexProps) {
+  const { t } = useTranslation();
+
   const {
     courses: coursesData,
     meta,
@@ -67,12 +70,12 @@ export default function Index({ courses, categories, filters, current_filters }:
 
   const chips = useMemo(() => {
     const out: Array<{ key: keyof CourseFilters; label: string; value?: string }> = [];
-    if (liveFilters?.search) out.push({ key: 'search', label: `Search: ${liveFilters.search}` });
-    if (liveFilters?.course_type) out.push({ key: 'course_type', label: `Type: ${liveFilters.course_type}` });
-    if (liveFilters?.category) out.push({ key: 'category', label: `Category: ${categoryLabel}` });
-    if (liveFilters?.platform) out.push({ key: 'platform', label: `Platform: ${liveFilters.platform}` });
-    if (liveFilters?.level) out.push({ key: 'level', label: `Level: ${liveFilters.level}` });
-    if (liveFilters?.have_cert) out.push({ key: 'have_cert', label: 'With certificate' });
+    if (liveFilters?.search) out.push({ key: 'search', label: `${t('common.search')}: ${liveFilters.search}` });
+    if (liveFilters?.course_type) out.push({ key: 'course_type', label: `${t('filters.course_type.label')}: ${liveFilters.course_type}` });
+    if (liveFilters?.category) out.push({ key: 'category', label: `${t('filters.category.label')}: ${categoryLabel}` });
+    if (liveFilters?.platform) out.push({ key: 'platform', label: `${t('filters.platform.label')}: ${liveFilters.platform}` });
+    if (liveFilters?.level) out.push({ key: 'level', label: `${t('filters.level.label')}: ${liveFilters.level}` });
+    if (liveFilters?.have_cert) out.push({ key: 'have_cert', label: t('filters.with_certificate') });
 
     if (liveFilters?.tags?.length) {
       const tagNames =
@@ -80,18 +83,18 @@ export default function Index({ courses, categories, filters, current_filters }:
           ?.filter((t) => liveFilters.tags?.includes(t.slug))
           .map((t) => ({ name: t.name, slug: t.slug })) ?? [];
       const [first, second, ...rest] = tagNames;
-      if (first) out.push({ key: 'tags', label: `Tag: ${first.name}`, value: first.slug });
-      if (second) out.push({ key: 'tags', label: `Tag: ${second.name}`, value: second.slug });
+      if (first) out.push({ key: 'tags', label: `${t('filters.tags.label').replace(':', '')}: ${first.name}`, value: first.slug });
+      if (second) out.push({ key: 'tags', label: `${t('filters.tags.label').replace(':', '')}: ${second.name}`, value: second.slug });
       if (rest.length) out.push({ key: 'tags', label: `+${rest.length} more` });
     }
 
     if (liveFilters?.min_price !== undefined || liveFilters?.max_price !== undefined) {
       const min = liveFilters.min_price ?? 0;
       const max = liveFilters.max_price ?? (filters?.price_range?.max ?? 0);
-      out.push({ key: 'min_price', label: `Price: $${min} – $${max}` });
+      out.push({ key: 'min_price', label: `${t('course_show.price')}: $${min} – $${max}` });
     }
     return out;
-  }, [liveFilters, filters?.tags, filters?.price_range?.max, categoryLabel]);
+  }, [liveFilters, filters?.tags, filters?.price_range?.max, categoryLabel, t]);
 
   const removeChip = useCallback(
     (key: keyof CourseFilters, value?: string) => {
@@ -118,7 +121,7 @@ export default function Index({ courses, categories, filters, current_filters }:
 
   return (
     <PublicLayout>
-      <Head title="Courses" />
+      <Head title={t('common.courses')} />
 
       {/* ===== Hero Section ===== */}
       <div className="relative bg-gradient-to-br from-primary/5 via-background to-secondary/5 border-b">
@@ -129,16 +132,16 @@ export default function Index({ courses, categories, filters, current_filters }:
               <div className="space-y-6">
                 <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-medium">
                   <BookOpen className="h-4 w-4" />
-                  Discover Your Next Learning Journey
+                  {t('courses.hero.badge')}
                 </div>
                 <div className="space-y-4">
                   <h1 className="text-4xl lg:text-6xl font-bold tracking-tight">
                     <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-                      Explore Courses
+                      {t('courses.hero.title')}
                     </span>
                   </h1>
                   <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-                    Find the perfect course to advance your skills. From beginner-friendly tutorials to advanced masterclasses.
+                    {t('courses.hero.subtitle')}
                   </p>
                 </div>
               </div>
@@ -153,7 +156,9 @@ export default function Index({ courses, categories, filters, current_filters }:
                     <div className="text-2xl font-bold text-blue-700 dark:text-blue-300 mb-1">
                       {meta?.total?.toLocaleString() ?? 0}
                     </div>
-                    <div className="text-sm font-medium text-blue-600/80 dark:text-blue-400/80">Total Courses</div>
+                    <div className="text-sm font-medium text-blue-600/80 dark:text-blue-400/80">
+                      {t('courses.stats.total_courses')}
+                    </div>
                   </CardContent>
                 </Card>
 
@@ -165,7 +170,9 @@ export default function Index({ courses, categories, filters, current_filters }:
                     <div className="text-2xl font-bold text-green-700 dark:text-green-300 mb-1">
                       {filters?.course_types?.free?.toLocaleString?.() ?? 0}
                     </div>
-                    <div className="text-sm font-medium text-green-600/80 dark:text-green-400/80">Free Courses</div>
+                    <div className="text-sm font-medium text-green-600/80 dark:text-green-400/80">
+                      {t('courses.stats.free_courses')}
+                    </div>
                   </CardContent>
                 </Card>
 
@@ -177,7 +184,9 @@ export default function Index({ courses, categories, filters, current_filters }:
                     <div className="text-2xl font-bold text-purple-700 dark:text-purple-300 mb-1">
                       {categories?.length?.toLocaleString?.() ?? 0}
                     </div>
-                    <div className="text-sm font-medium text-purple-600/80 dark:text-purple-400/80">Categories</div>
+                    <div className="text-sm font-medium text-purple-600/80 dark:text-purple-400/80">
+                      {t('courses.stats.categories')}
+                    </div>
                   </CardContent>
                 </Card>
 
@@ -189,7 +198,9 @@ export default function Index({ courses, categories, filters, current_filters }:
                     <div className="text-2xl font-bold text-orange-700 dark:text-orange-300 mb-1">
                       {filters?.platforms?.length?.toLocaleString?.() ?? 0}
                     </div>
-                    <div className="text-sm font-medium text-orange-600/80 dark:text-orange-400/80">Platforms</div>
+                    <div className="text-sm font-medium text-orange-600/80 dark:text-orange-400/80">
+                      {t('courses.stats.platforms')}
+                    </div>
                   </CardContent>
                 </Card>
               </div>
@@ -234,19 +245,19 @@ export default function Index({ courses, categories, filters, current_filters }:
                       {meta?.total && meta.total > 0 ? (
                         <>
                           <BookOpen className="h-6 w-6 text-primary" />
-                          {meta.total.toLocaleString()} Course{meta.total !== 1 ? 's' : ''} Found
+                          {t('courses.results.courses_found', { count: meta.total })}
                         </>
                       ) : (
                         <>
                           <Search className="h-6 w-6 text-muted-foreground" />
-                          No Courses Found
+                          {t('courses.results.no_courses')}
                         </>
                       )}
                     </h2>
                     {meta?.total && meta.total > 0 && (
                       <p className="text-muted-foreground flex items-center gap-2 text-sm">
                         <Clock className="h-4 w-4" />
-                        Showing {meta.from} - {meta.to} of {meta.total} results
+                        {t('courses.results.showing', { from: meta.from, to: meta.to, total: meta.total })}
                       </p>
                     )}
                   </div>
@@ -254,19 +265,21 @@ export default function Index({ courses, categories, filters, current_filters }:
                   {/* Sort Controls */}
                   <div className="flex items-center gap-3">
                     <div className="flex items-center gap-2">
-                      <label className="text-sm font-medium text-muted-foreground whitespace-nowrap">Sort by:</label>
+                      <label className="text-sm font-medium text-muted-foreground whitespace-nowrap">
+                        {t('courses.sort.label')}
+                      </label>
                       <div className="relative">
                         <select
                           className="appearance-none pl-3 pr-8 py-2 border border-border rounded-md bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary min-w-[140px]"
                           value={liveFilters?.sort ?? 'newest'}
                           onChange={(e) => setFilters({ sort: e.target.value as any })}
                         >
-                          <option value="newest">Newest First</option>
-                          <option value="oldest">Oldest First</option>
-                          <option value="price-low">Price: Low to High</option>
-                          <option value="price-high">Price: High to Low</option>
-                          <option value="title">Title A-Z</option>
-                          <option value="popularity">Most Popular</option>
+                          <option value="newest">{t('courses.sort.newest')}</option>
+                          <option value="oldest">{t('courses.sort.oldest')}</option>
+                          <option value="price-low">{t('courses.sort.price_low')}</option>
+                          <option value="price-high">{t('courses.sort.price_high')}</option>
+                          <option value="title">{t('courses.sort.title')}</option>
+                          <option value="popularity">{t('courses.sort.popularity')}</option>
                         </select>
                         <ChevronDown className="h-4 w-4 absolute right-2 top-1/2 transform -translate-y-1/2 text-muted-foreground pointer-events-none" />
                       </div>
@@ -280,7 +293,7 @@ export default function Index({ courses, categories, filters, current_filters }:
                         className="shrink-0 border-2 hover:bg-destructive/5 hover:border-destructive/20 hover:text-destructive"
                       >
                         <X className="h-4 w-4 mr-2" />
-                        Reset All
+                        {t('courses.filters.reset_all')}
                       </Button>
                     )}
                   </div>
@@ -289,7 +302,9 @@ export default function Index({ courses, categories, filters, current_filters }:
                 {/* Active Filter Chips */}
                 {hasActiveFilters && (
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="text-sm font-medium text-muted-foreground mr-1">Active filters:</span>
+                    <span className="text-sm font-medium text-muted-foreground mr-1">
+                      {t('courses.filters.active_filters')}
+                    </span>
                     {chips.map((chip, idx) => (
                       <Badge
                         key={`${chip.key}-${chip.value ?? idx}`}
@@ -310,7 +325,7 @@ export default function Index({ courses, categories, filters, current_filters }:
                       onClick={resetFilters}
                     >
                       <X className="h-3 w-3 mr-1" />
-                      Clear all
+                      {t('courses.filters.clear')}
                     </Button>
                   </div>
                 )}
@@ -339,26 +354,26 @@ export default function Index({ courses, categories, filters, current_filters }:
                 <CardContent className="p-6">
                   <h3 className="font-semibold mb-4 flex items-center gap-2">
                     <Star className="h-4 w-4 text-primary" />
-                    Quick Stats
+                    {t('courses.quick_stats.title')}
                   </h3>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div className="flex flex-col items-center text-center p-4 rounded-lg bg-background/50 border">
                       <div className="text-2xl font-bold text-primary mb-1">
                         {meta?.total?.toLocaleString() ?? 0}
                       </div>
-                      <div className="text-sm text-muted-foreground">Results found</div>
+                      <div className="text-sm text-muted-foreground">{t('courses.quick_stats.results_found')}</div>
                     </div>
                     <div className="flex flex-col items-center text-center p-4 rounded-lg bg-background/50 border">
                       <div className="text-2xl font-bold text-green-600 mb-1">
                         {filters?.course_types?.free?.toLocaleString?.() ?? 0}
                       </div>
-                      <div className="text-sm text-muted-foreground">Free courses</div>
+                      <div className="text-sm text-muted-foreground">{t('courses.quick_stats.free_courses')}</div>
                     </div>
                     <div className="flex flex-col items-center text-center p-4 rounded-lg bg-background/50 border">
                       <div className="text-2xl font-bold text-purple-600 mb-1">
                         {categories?.length ?? 0}
                       </div>
-                      <div className="text-sm text-muted-foreground">Categories</div>
+                      <div className="text-sm text-muted-foreground">{t('courses.quick_stats.categories')}</div>
                     </div>
                   </div>
                 </CardContent>

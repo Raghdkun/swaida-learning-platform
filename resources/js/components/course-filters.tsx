@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Separator } from '@/components/ui/separator';
 import type { CourseFilters, FilterOptions } from '@/types';
+import { useTranslation } from '@/hooks/use-translation';
 
 interface Props {
   filters: CourseFilters;
@@ -26,30 +27,20 @@ function CourseFiltersComponent({
   onResetFilters,
   loading = false,
 }: Props) {
+  const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
 
   const handleSearchChange = (value: string) => onFiltersChange({ search: value || undefined });
-
-  const handleCategoryChange = (value: string) =>
-    onFiltersChange({ category: value === 'all' ? undefined : value });
-
-  const handlePlatformChange = (value: string) =>
-    onFiltersChange({ platform: value === 'all' ? undefined : value });
-
-  const handleLevelChange = (value: string) =>
-    onFiltersChange({ level: (value === 'all' ? undefined : (value as any)) });
-
+  const handleCategoryChange = (value: string) => onFiltersChange({ category: value === 'all' ? undefined : value });
+  const handlePlatformChange = (value: string) => onFiltersChange({ platform: value === 'all' ? undefined : value });
+  const handleLevelChange = (value: string) => onFiltersChange({ level: value === 'all' ? undefined : (value as any) });
   const handleCourseTypeChange = (value: string) =>
-    onFiltersChange({ course_type: (value === 'all' ? undefined : (value as 'free' | 'paid')) });
-
-  const handleCertificateChange = (checked: boolean) =>
-    onFiltersChange({ have_cert: checked ? true : undefined });
+    onFiltersChange({ course_type: value === 'all' ? undefined : (value as 'free' | 'paid') });
+  const handleCertificateChange = (checked: boolean) => onFiltersChange({ have_cert: checked ? true : undefined });
 
   const handleTagToggle = (tagSlug: string) => {
     const current = filters?.tags || [];
-    const next = current.includes(tagSlug)
-      ? current.filter(t => t !== tagSlug)
-      : [...current, tagSlug];
+    const next = current.includes(tagSlug) ? current.filter((t) => t !== tagSlug) : [...current, tagSlug];
     onFiltersChange({ tags: next.length ? next : undefined });
   };
 
@@ -78,7 +69,7 @@ function CourseFiltersComponent({
             <div className="relative">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground h-5 w-5" />
               <Input
-                placeholder="Search courses by title, description, or instructor..."
+                placeholder={t('filters.search_placeholder')}
                 value={filters?.search || ''}
                 onChange={(e) => handleSearchChange(e.target.value)}
                 className="pl-12 h-14 text-base border-2 focus:border-primary/50 bg-background/80 backdrop-blur-sm"
@@ -99,14 +90,12 @@ function CourseFiltersComponent({
                       <Filter className="h-5 w-5 text-primary" />
                     </div>
                     <div>
-                      <h3 className="font-semibold text-lg">Advanced Filters</h3>
-                      <p className="text-sm text-muted-foreground">
-                        Refine your search with detailed options
-                      </p>
+                      <h3 className="font-semibold text-lg">{t('filters.advanced_filters')}</h3>
+                      <p className="text-sm text-muted-foreground">{t('filters.refine_search')}</p>
                     </div>
                     {!!activeCount && (
                       <Badge variant="default" className="ml-2 px-3 py-1 bg-primary text-primary-foreground">
-                        {activeCount} active
+                        {t('filters.active', { count: activeCount })}
                       </Badge>
                     )}
                   </div>
@@ -122,12 +111,12 @@ function CourseFiltersComponent({
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                   <CardTitle className="text-xl font-semibold flex items-center gap-2">
                     <Filter className="h-5 w-5" />
-                    Filter Options
+                    {t('filters.filter_options')}
                   </CardTitle>
                   {!!activeCount && (
                     <Button variant="outline" size="sm" onClick={onResetFilters} className="border-dashed">
                       <X className="h-4 w-4 mr-2" />
-                      Clear All Filters
+                      {t('courses.filters.clear_all') || t('courses.filters.clear') || t('sidebar_filters.clear_filters')}
                     </Button>
                   )}
                 </div>
@@ -140,15 +129,17 @@ function CourseFiltersComponent({
                   <div className="space-y-3">
                     <Label className="text-sm font-semibold flex items-center gap-2">
                       <DollarSign className="h-4 w-4 text-primary" />
-                      Course Type
+                      {t('filters.course_type.label')}
                     </Label>
                     <Select value={filters?.course_type || 'all'} onValueChange={handleCourseTypeChange} disabled={loading}>
-                      <SelectTrigger className="h-11"><SelectValue placeholder="Select type" /></SelectTrigger>
+                      <SelectTrigger className="h-11">
+                        <SelectValue placeholder={t('filters.course_type.all')} />
+                      </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="all">All Courses</SelectItem>
+                        <SelectItem value="all">{t('filters.course_type.all')}</SelectItem>
                         <SelectItem value="free">
                           <div className="flex items-center gap-2">
-                            <span>Free Courses</span>
+                            <span>{t('filters.course_type.free')}</span>
                             {!!filterOptions?.course_types?.free && (
                               <Badge variant="secondary" className="text-xs">{filterOptions.course_types.free}</Badge>
                             )}
@@ -156,7 +147,7 @@ function CourseFiltersComponent({
                         </SelectItem>
                         <SelectItem value="paid">
                           <div className="flex items-center gap-2">
-                            <span>Paid Courses</span>
+                            <span>{t('filters.course_type.paid')}</span>
                             {!!filterOptions?.course_types?.paid && (
                               <Badge variant="secondary" className="text-xs">{filterOptions.course_types.paid}</Badge>
                             )}
@@ -166,20 +157,22 @@ function CourseFiltersComponent({
                     </Select>
                   </div>
 
-                  {/* Category (slug or id string; backend normalizes) */}
+                  {/* Category */}
                   <div className="space-y-3">
                     <Label className="text-sm font-semibold flex items-center gap-2">
                       <BookOpen className="h-4 w-4 text-primary" />
-                      Category
+                      {t('filters.category.label')}
                     </Label>
                     <Select
                       value={filters?.category || 'all'}
                       onValueChange={handleCategoryChange}
                       disabled={loading || !filterOptions?.categories?.length}
                     >
-                      <SelectTrigger className="h-11"><SelectValue placeholder="Select category" /></SelectTrigger>
+                      <SelectTrigger className="h-11">
+                        <SelectValue placeholder={t('sidebar_filters.all_categories')} />
+                      </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="all">All Categories</SelectItem>
+                        <SelectItem value="all">{t('sidebar_filters.all_categories')}</SelectItem>
                         {filterOptions?.categories?.map((c) => (
                           <SelectItem key={c.id} value={c.slug}>
                             <div className="flex items-center justify-between w-full">
@@ -196,15 +189,17 @@ function CourseFiltersComponent({
 
                   {/* Platform */}
                   <div className="space-y-3">
-                    <Label className="text-sm font-semibold">Platform</Label>
+                    <Label className="text-sm font-semibold">{t('filters.platform.label')}</Label>
                     <Select
                       value={filters?.platform || 'all'}
                       onValueChange={handlePlatformChange}
                       disabled={loading || !filterOptions?.platforms?.length}
                     >
-                      <SelectTrigger className="h-11"><SelectValue placeholder="Select platform" /></SelectTrigger>
+                      <SelectTrigger className="h-11">
+                        <SelectValue placeholder={t('sidebar_filters.all_platforms')} />
+                      </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="all">All Platforms</SelectItem>
+                        <SelectItem value="all">{t('sidebar_filters.all_platforms')}</SelectItem>
                         {filterOptions?.platforms?.map((p) => (
                           <SelectItem key={p} value={p}>{p}</SelectItem>
                         ))}
@@ -214,14 +209,28 @@ function CourseFiltersComponent({
 
                   {/* Level */}
                   <div className="space-y-3">
-                    <Label className="text-sm font-semibold">Level</Label>
+                    <Label className="text-sm font-semibold">{t('filters.level.label')}</Label>
                     <Select value={filters?.level || 'all'} onValueChange={handleLevelChange} disabled={loading}>
-                      <SelectTrigger className="h-11"><SelectValue placeholder="Select level" /></SelectTrigger>
+                      <SelectTrigger className="h-11">
+                        <SelectValue placeholder={t('sidebar_filters.all_levels')} />
+                      </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="all">All Levels</SelectItem>
-                        <SelectItem value="beginner"><Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 border">Beginner</Badge></SelectItem>
-                        <SelectItem value="intermediate"><Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200 border">Intermediate</Badge></SelectItem>
-                        <SelectItem value="advanced"><Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">Advanced</Badge></SelectItem>
+                        <SelectItem value="all">{t('sidebar_filters.all_levels')}</SelectItem>
+                        <SelectItem value="beginner">
+                          <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 border">
+                            {t('filters.level.beginner')}
+                          </Badge>
+                        </SelectItem>
+                        <SelectItem value="intermediate">
+                          <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200 border">
+                            {t('filters.level.intermediate')}
+                          </Badge>
+                        </SelectItem>
+                        <SelectItem value="advanced">
+                          <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">
+                            {t('filters.level.advanced')}
+                          </Badge>
+                        </SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -233,7 +242,7 @@ function CourseFiltersComponent({
                 <div className="space-y-3">
                   <Label className="text-sm font-semibold flex items-center gap-2">
                     <Award className="h-4 w-4 text-primary" />
-                    Certificate Options
+                    {t('filters.certificate.label')}
                   </Label>
                   <Card className="p-4 bg-muted/30 border-dashed">
                     <div className="flex items-center space-x-3">
@@ -246,7 +255,7 @@ function CourseFiltersComponent({
                       />
                       <Label htmlFor="certificate" className="text-sm font-medium cursor-pointer flex items-center gap-2">
                         <Award className="h-4 w-4" />
-                        Only show courses with certificates
+                        {t('filters.certificate.checkbox_label')}
                       </Label>
                     </div>
                   </Card>
@@ -257,7 +266,7 @@ function CourseFiltersComponent({
                   <div className="space-y-4">
                     <Label className="text-sm font-semibold flex items-center gap-2">
                       <TagIcon className="h-4 w-4 text-primary" />
-                      Popular Tags
+                      {t('filters.tags.label')}
                     </Label>
                     <Card className="p-4 bg-muted/20 border-dashed">
                       <div className="flex flex-wrap gap-2 max-h-48 overflow-y-auto">
@@ -299,12 +308,12 @@ function CourseFiltersComponent({
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Filter className="h-4 w-4 text-primary" />
-                  <span className="text-sm font-semibold text-primary">Active Filters</span>
-                  <Badge variant="secondary" className="text-xs">{activeCount}</Badge>
+                  <span className="text-sm font-semibold text-primary">{t('courses.filters.active_filters')}</span>
+                  <Badge variant="secondary" className="text-xs">{t('filters.active', { count: activeCount })}</Badge>
                 </div>
                 <Button variant="ghost" size="sm" onClick={onResetFilters} className="text-xs h-7 px-3">
                   <X className="h-3 w-3 mr-1" />
-                  Clear all
+                  {t('courses.filters.clear') || t('sidebar_filters.clear_filters')}
                 </Button>
               </div>
 
@@ -312,15 +321,17 @@ function CourseFiltersComponent({
                 {filters?.search && (
                   <Badge variant="secondary" className="flex items-center gap-2 px-3 py-1.5 bg-background border">
                     <Search className="h-3 w-3" />
-                    <span className="text-xs font-medium">Search:</span>
-                    <span className="text-xs">{filters.search.length > 20 ? `${filters.search.substring(0, 20)}...` : filters.search}</span>
+                    <span className="text-xs font-medium">{t('common.search')}:</span>
+                    <span className="text-xs">
+                      {filters.search.length > 20 ? `${filters.search.substring(0, 20)}...` : filters.search}
+                    </span>
                     <X className="h-3 w-3 cursor-pointer" onClick={() => onFiltersChange({ search: undefined })} />
                   </Badge>
                 )}
                 {filters?.course_type && (
                   <Badge variant="secondary" className="flex items-center gap-2 px-3 py-1.5 bg-background border">
                     <DollarSign className="h-3 w-3" />
-                    <span className="text-xs font-medium">Type:</span>
+                    <span className="text-xs font-medium">{t('filters.course_type.label')}:</span>
                     <span className="text-xs capitalize">{filters.course_type}</span>
                     <X className="h-3 w-3 cursor-pointer" onClick={() => onFiltersChange({ course_type: undefined })} />
                   </Badge>
@@ -328,23 +339,23 @@ function CourseFiltersComponent({
                 {filters?.category && (
                   <Badge variant="secondary" className="flex items-center gap-2 px-3 py-1.5 bg-background border">
                     <BookOpen className="h-3 w-3" />
-                    <span className="text-xs font-medium">Category:</span>
+                    <span className="text-xs font-medium">{t('filters.category.label')}:</span>
                     <span className="text-xs">
-                      {filterOptions?.categories?.find(c => c.slug === filters.category)?.name ?? filters.category}
+                      {filterOptions?.categories?.find((c) => c.slug === filters.category)?.name ?? filters.category}
                     </span>
                     <X className="h-3 w-3 cursor-pointer" onClick={() => onFiltersChange({ category: undefined })} />
                   </Badge>
                 )}
                 {filters?.platform && (
                   <Badge variant="secondary" className="flex items-center gap-2 px-3 py-1.5 bg-background border">
-                    <span className="text-xs font-medium">Platform:</span>
+                    <span className="text-xs font-medium">{t('filters.platform.label')}:</span>
                     <span className="text-xs">{filters.platform}</span>
                     <X className="h-3 w-3 cursor-pointer" onClick={() => onFiltersChange({ platform: undefined })} />
                   </Badge>
                 )}
                 {filters?.level && (
                   <Badge variant="secondary" className="flex items-center gap-2 px-3 py-1.5 bg-background border">
-                    <span className="text-xs font-medium">Level:</span>
+                    <span className="text-xs font-medium">{t('filters.level.label')}:</span>
                     <span className="text-xs capitalize">{filters.level}</span>
                     <X className="h-3 w-3 cursor-pointer" onClick={() => onFiltersChange({ level: undefined })} />
                   </Badge>
@@ -352,15 +363,17 @@ function CourseFiltersComponent({
                 {filters?.have_cert && (
                   <Badge variant="secondary" className="flex items-center gap-2 px-3 py-1.5 bg-background border">
                     <Award className="h-3 w-3" />
-                    <span className="text-xs">With Certificate</span>
+                    <span className="text-xs">{t('filters.with_certificate')}</span>
                     <X className="h-3 w-3 cursor-pointer" onClick={() => onFiltersChange({ have_cert: undefined })} />
                   </Badge>
                 )}
                 {!!filters?.tags?.length && (
                   <Badge variant="secondary" className="flex items-center gap-2 px-3 py-1.5 bg-background border">
                     <TagIcon className="h-3 w-3" />
-                    <span className="text-xs font-medium">Tags:</span>
-                    <span className="text-xs">{filters.tags.length} selected</span>
+                    <span className="text-xs font-medium">{t('filters.tags.label')}:</span>
+                    <span className="text-xs">
+                      {filters.tags.length} {t('filters.selected', { count: filters.tags.length })}
+                    </span>
                     <X className="h-3 w-3 cursor-pointer" onClick={() => onFiltersChange({ tags: undefined })} />
                   </Badge>
                 )}

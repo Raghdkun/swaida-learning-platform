@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { DollarSign, LogOut, ExternalLink } from 'lucide-react';
+import { useTranslation } from '@/hooks/use-translation';
 
 interface CourseLite { id: number; title: string; }
 interface Allocation {
@@ -40,6 +41,8 @@ interface Sponsor {
 }
 
 export default function SponsorPortal({ sponsor }: { sponsor: Sponsor }) {
+  const { t } = useTranslation();
+
   const logout = (e: React.FormEvent) => {
     e.preventDefault();
     router.post(`logout`);
@@ -47,18 +50,23 @@ export default function SponsorPortal({ sponsor }: { sponsor: Sponsor }) {
 
   return (
     <>
-      <Head title="My Sponsor Portal" />
+      <Head title={t('sponsor.title')} />
       <div className="container mx-auto px-4 py-10 space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Welcome, {sponsor.full_name}</h1>
-            <p className="text-muted-foreground text-sm">Last login: {sponsor.last_login_at ? new Date(sponsor.last_login_at).toLocaleString() : '—'}</p>
+            <h1 className="text-3xl font-bold tracking-tight">
+              {t('sponsor.welcome', { name: sponsor.full_name })}
+            </h1>
+            <p className="text-muted-foreground text-sm">
+              {t('sponsor.last_login')}{' '}
+              {sponsor.last_login_at ? new Date(sponsor.last_login_at).toLocaleString() : t('sponsor.none')}
+            </p>
           </div>
           <form onSubmit={logout}>
             <Button variant="outline" type="submit">
               <LogOut className="mr-2 h-4 w-4" />
-              Logout
+              {t('common.logout')}
             </Button>
           </form>
         </div>
@@ -66,15 +74,15 @@ export default function SponsorPortal({ sponsor }: { sponsor: Sponsor }) {
         {/* Summary Cards */}
         <div className="grid gap-4 md:grid-cols-3">
           <Card>
-            <CardHeader><CardTitle>Contact</CardTitle></CardHeader>
+            <CardHeader><CardTitle>{t('sponsor.contact')}</CardTitle></CardHeader>
             <CardContent className="space-y-1">
-              <div className="text-sm"><span className="text-muted-foreground">Email:</span> {sponsor.email}</div>
-              <div className="text-sm"><span className="text-muted-foreground">Phone:</span> {sponsor.phone || '—'}</div>
+              <div className="text-sm"><span className="text-muted-foreground">{t('sponsor.email')}:</span> {sponsor.email}</div>
+              <div className="text-sm"><span className="text-muted-foreground">{t('sponsor.phone')}:</span> {sponsor.phone || t('sponsor.none')}</div>
             </CardContent>
           </Card>
 
           <Card>
-            <CardHeader><CardTitle>Initial Amount</CardTitle></CardHeader>
+            <CardHeader><CardTitle>{t('sponsor.initial_amount')}</CardTitle></CardHeader>
             <CardContent>
               <Badge variant="outline" className="flex items-center gap-1">
                 <DollarSign className="h-3 w-3" />
@@ -84,7 +92,7 @@ export default function SponsorPortal({ sponsor }: { sponsor: Sponsor }) {
           </Card>
 
           <Card>
-            <CardHeader><CardTitle>Current Balance</CardTitle></CardHeader>
+            <CardHeader><CardTitle>{t('sponsor.current_balance')}</CardTitle></CardHeader>
             <CardContent>
               <Badge className="flex items-center gap-1">
                 <DollarSign className="h-3 w-3" />
@@ -96,15 +104,15 @@ export default function SponsorPortal({ sponsor }: { sponsor: Sponsor }) {
 
         {/* Allocations */}
         <Card>
-          <CardHeader><CardTitle>Allocations</CardTitle></CardHeader>
+          <CardHeader><CardTitle>{t('sponsor.allocations.title')}</CardTitle></CardHeader>
           <CardContent className="p-0">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Recipient</TableHead>
-                  <TableHead>Course</TableHead>
-                  <TableHead>Amount</TableHead>
-                  <TableHead>Date</TableHead>
+                  <TableHead>{t('sponsor.allocations.recipient')}</TableHead>
+                  <TableHead>{t('sponsor.allocations.course')}</TableHead>
+                  <TableHead>{t('sponsor.allocations.amount')}</TableHead>
+                  <TableHead>{t('sponsor.allocations.date')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -117,10 +125,15 @@ export default function SponsorPortal({ sponsor }: { sponsor: Sponsor }) {
                     <TableCell>
                       {a.course ? a.course.title : (
                         a.course_external_url ? (
-                          <a href={a.course_external_url} className="text-xs text-blue-600 hover:underline inline-flex items-center gap-1" target="_blank" rel="noreferrer">
-                            <ExternalLink className="h-3 w-3" /> external
+                          <a
+                            href={a.course_external_url}
+                            className="text-xs text-blue-600 hover:underline inline-flex items-center gap-1"
+                            target="_blank"
+                            rel="noreferrer"
+                          >
+                            <ExternalLink className="h-3 w-3" /> {t('sponsor.external')}
                           </a>
-                        ) : '—'
+                        ) : t('sponsor.none')
                       )}
                     </TableCell>
                     <TableCell>{Number(a.amount).toFixed(2)} USD</TableCell>
@@ -129,40 +142,52 @@ export default function SponsorPortal({ sponsor }: { sponsor: Sponsor }) {
                 ))}
               </TableBody>
             </Table>
-            {sponsor.allocations.length === 0 && <div className="py-12 text-center text-muted-foreground">No allocations yet.</div>}
+            {sponsor.allocations.length === 0 && (
+              <div className="py-12 text-center text-muted-foreground">
+                {t('sponsor.allocations.empty')}
+              </div>
+            )}
           </CardContent>
         </Card>
 
         {/* Transactions */}
         <Card>
-          <CardHeader><CardTitle>Transactions</CardTitle></CardHeader>
+          <CardHeader><CardTitle>{t('sponsor.transactions.title')}</CardTitle></CardHeader>
           <CardContent className="p-0">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Type</TableHead>
-                  <TableHead>Amount</TableHead>
-                  <TableHead>Reference</TableHead>
-                  <TableHead>Notes</TableHead>
-                  <TableHead>Date</TableHead>
+                  <TableHead>{t('sponsor.transactions.type')}</TableHead>
+                  <TableHead>{t('sponsor.transactions.amount')}</TableHead>
+                  <TableHead>{t('sponsor.transactions.reference')}</TableHead>
+                  <TableHead>{t('sponsor.transactions.notes')}</TableHead>
+                  <TableHead>{t('sponsor.transactions.date')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {sponsor.transactions.map(t => (
-                  <TableRow key={t.id}>
-                    <TableCell><Badge variant="outline">{t.type}</Badge></TableCell>
-                    <TableCell>{Number(t.amount).toFixed(2)} USD</TableCell>
-                    <TableCell className="text-sm">{t.reference || '—'}</TableCell>
-                    <TableCell className="text-sm">{t.notes || '—'}</TableCell>
-                    <TableCell>{new Date(t.created_at).toLocaleString()}</TableCell>
+                {sponsor.transactions.map(tnx => (
+                  <TableRow key={tnx.id}>
+                    <TableCell>
+                      <Badge variant="outline">
+                        {t(`sponsor.transactions.types.${tnx.type}`)}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>{Number(tnx.amount).toFixed(2)} USD</TableCell>
+                    <TableCell className="text-sm">{tnx.reference || t('sponsor.none')}</TableCell>
+                    <TableCell className="text-sm">{tnx.notes || t('sponsor.none')}</TableCell>
+                    <TableCell>{new Date(tnx.created_at).toLocaleString()}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
             </Table>
-            {sponsor.transactions.length === 0 && <div className="py-12 text-center text-muted-foreground">No transactions yet.</div>}
+            {sponsor.transactions.length === 0 && (
+              <div className="py-12 text-center text-muted-foreground">
+                {t('sponsor.transactions.empty')}
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
-      </>
+    </>
   );
 }

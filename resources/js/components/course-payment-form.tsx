@@ -12,6 +12,7 @@ import { AlertCircle, Upload, X, CreditCard, Shield, Clock, CheckCircle2 } from 
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import type { Course } from '@/types';
 import { store as paymentStore } from '@/routes/courses/payment';
+import { useTranslation } from '@/hooks/use-translation';
 
 interface CoursePaymentFormProps {
   course: Course;
@@ -27,6 +28,7 @@ interface PaymentFormData {
 }
 
 export function CoursePaymentForm({ course }: CoursePaymentFormProps) {
+  const { t } = useTranslation();
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   const form = useForm<PaymentFormData>({
@@ -61,7 +63,6 @@ export function CoursePaymentForm({ course }: CoursePaymentFormProps) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    // ✅ Build real FormData to satisfy TS + upload the file
     const payload = new FormData();
     payload.append('full_name', form.data.full_name);
     payload.append('phone', form.data.phone);
@@ -73,7 +74,7 @@ export function CoursePaymentForm({ course }: CoursePaymentFormProps) {
     }
 
     router.post(paymentStore.url(), payload, {
-      forceFormData: true, // harmless when already FormData; keeps consistency
+      forceFormData: true,
       preserveScroll: true,
       onSuccess: () => {
         form.reset();
@@ -90,10 +91,11 @@ export function CoursePaymentForm({ course }: CoursePaymentFormProps) {
           <CardHeader className="space-y-4">
             <div className="flex items-center gap-2">
               <CreditCard className="h-6 w-6 text-primary" />
-              <CardTitle className="text-2xl font-bold">Payment Request</CardTitle>
+              {/* Use the form title from i18n */}
+              <CardTitle className="text-2xl font-bold">{t('payment.form.title')}</CardTitle>
             </div>
             <p className="text-muted-foreground">
-              Complete the form below to request payment assistance for this course. Our team will contact you within 24-48 hours.
+              {t('payment.form.subtitle')}
             </p>
             <Separator />
           </CardHeader>
@@ -101,13 +103,13 @@ export function CoursePaymentForm({ course }: CoursePaymentFormProps) {
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Full Name */}
               <div className="space-y-2">
-                <Label htmlFor="full_name">Full Name *</Label>
+                <Label htmlFor="full_name">{t('payment.form.full_name')} *</Label>
                 <Input
                   id="full_name"
                   type="text"
                   value={form.data.full_name}
                   onChange={(e) => form.setData('full_name', e.target.value)}
-                  placeholder="Enter your full name (first, middle, last)"
+                  placeholder={t('payment.form.full_name_placeholder')}
                   className={form.errors.full_name ? 'border-destructive' : ''}
                   required
                 />
@@ -118,13 +120,13 @@ export function CoursePaymentForm({ course }: CoursePaymentFormProps) {
 
               {/* Phone Number */}
               <div className="space-y-2">
-                <Label htmlFor="phone">Phone Number *</Label>
+                <Label htmlFor="phone">{t('payment.form.phone')} *</Label>
                 <Input
                   id="phone"
                   type="tel"
                   value={form.data.phone}
                   onChange={(e) => form.setData('phone', e.target.value)}
-                  placeholder="+963 XXX XXX XXX"
+                  placeholder={t('payment.form.phone_placeholder')}
                   className={form.errors.phone ? 'border-destructive' : ''}
                   required
                 />
@@ -135,13 +137,13 @@ export function CoursePaymentForm({ course }: CoursePaymentFormProps) {
 
               {/* Email */}
               <div className="space-y-2">
-                <Label htmlFor="email">Email Address *</Label>
+                <Label htmlFor="email">{t('payment.form.email')} *</Label>
                 <Input
                   id="email"
                   type="email"
                   value={form.data.email}
                   onChange={(e) => form.setData('email', e.target.value)}
-                  placeholder="your.email@example.com"
+                  placeholder={t('payment.form.email_placeholder')}
                   className={form.errors.email ? 'border-destructive' : ''}
                   required
                 />
@@ -152,7 +154,7 @@ export function CoursePaymentForm({ course }: CoursePaymentFormProps) {
 
               {/* Identity Image */}
               <div className="space-y-2">
-                <Label htmlFor="identity_image">Identity Image *</Label>
+                <Label htmlFor="identity_image">{t('payment.form.identity_image')} *</Label>
                 <div className="space-y-4">
                   {!imagePreview ? (
                     <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 text-center hover:border-muted-foreground/50 transition-colors">
@@ -162,9 +164,9 @@ export function CoursePaymentForm({ course }: CoursePaymentFormProps) {
                           htmlFor="identity_image"
                           className="cursor-pointer text-sm font-medium text-primary hover:text-primary/80"
                         >
-                          Click to upload identity image
+                          {t('payment.form.identity_click_to_upload')}
                         </Label>
-                        <p className="text-xs text-muted-foreground">PNG, JPG, JPEG up to 10MB</p>
+                        <p className="text-xs text-muted-foreground">{t('payment.form.identity_formats')}</p>
                       </div>
                       <Input
                         id="identity_image"
@@ -179,7 +181,7 @@ export function CoursePaymentForm({ course }: CoursePaymentFormProps) {
                     <div className="relative">
                       <img
                         src={imagePreview}
-                        alt="Identity preview"
+                        alt={t('payment.form.identity_preview_alt')}
                         className="w-full h-48 object-cover rounded-lg border"
                       />
                       <Button
@@ -201,12 +203,12 @@ export function CoursePaymentForm({ course }: CoursePaymentFormProps) {
 
               {/* Reason */}
               <div className="space-y-2">
-                <Label htmlFor="reason">Why would you like to buy this course? *</Label>
+                <Label htmlFor="reason">{t('payment.form.reason')} *</Label>
                 <Textarea
                   id="reason"
                   value={form.data.reason}
                   onChange={(e) => form.setData('reason', e.target.value)}
-                  placeholder="Please explain why you're interested in this course and how it will help you..."
+                  placeholder={t('payment.form.reason_placeholder')}
                   rows={4}
                   className={form.errors.reason ? 'border-destructive' : ''}
                   required
@@ -220,24 +222,24 @@ export function CoursePaymentForm({ course }: CoursePaymentFormProps) {
               <Alert>
                 <AlertCircle className="h-4 w-4" />
                 <AlertDescription>
-                  After submitting this form, our team will contact you via WhatsApp or email as soon as possible to assist with your payment.
+                  {t('payment.form.contact_notice')}
                 </AlertDescription>
               </Alert>
 
               {/* Submit Button */}
               <Button type="submit" className="w-full" size="lg" disabled={form.processing}>
-                {form.processing ? 'Submitting...' : 'Submit Payment Request'}
+                {form.processing ? t('payment.form.submitting') : t('payment.form.submit')}
               </Button>
             </form>
           </CardContent>
         </Card>
       </div>
 
-      {/* Sidebar (unchanged) */}
+      {/* Sidebar */}
       <div className="space-y-6">
         <Card className="border-border bg-card">
           <CardHeader>
-            <CardTitle className="text-lg font-semibold">Course Summary</CardTitle>
+            <CardTitle className="text-lg font-semibold">{t('payment_success.course_details')}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             {(course.image || course.image_url) && (
@@ -261,7 +263,9 @@ export function CoursePaymentForm({ course }: CoursePaymentFormProps) {
 
               {course.formatted_price && (
                 <div className="flex items-center justify-between p-3 bg-primary/5 rounded-lg border border-primary/20">
-                  <span className="text-sm font-medium text-muted-foreground">Course Price:</span>
+                  <span className="text-sm font-medium text-muted-foreground">
+                    {t('payment.course_info.price_label')}
+                  </span>
                   <span className="text-lg font-bold text-primary">{course.formatted_price}</span>
                 </div>
               )}
@@ -273,38 +277,41 @@ export function CoursePaymentForm({ course }: CoursePaymentFormProps) {
           <CardHeader>
             <CardTitle className="text-lg font-semibold flex items-center gap-2">
               <Shield className="h-5 w-5 text-primary" />
-              How It Works
+              {t('payment_success.next_steps.title')}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-3">
+              {/* Step 1 - Submit / WhatsApp */}
               <div className="flex items-start gap-3">
                 <div className="w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
                   <span className="text-xs font-bold text-primary">1</span>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-foreground">Submit Request</p>
-                  <p className="text-xs text-muted-foreground">Fill out the form with your details</p>
+                  <p className="text-sm font-medium text-foreground">{t('payment_success.next_steps.whatsapp.title')}</p>
+                  <p className="text-xs text-muted-foreground">{t('payment_success.next_steps.whatsapp.desc')}</p>
                 </div>
               </div>
 
+              {/* Step 2 - Review */}
               <div className="flex items-start gap-3">
                 <div className="w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
                   <Clock className="w-3 h-3 text-primary" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-foreground">Review Process</p>
-                  <p className="text-xs text-muted-foreground">We'll review within 24-48 hours</p>
+                  <p className="text-sm font-medium text-foreground">{t('payment_success.next_steps.review.title')}</p>
+                  <p className="text-xs text-muted-foreground">{t('payment_success.next_steps.review.desc')}</p>
                 </div>
               </div>
 
+              {/* Step 3 - Email */}
               <div className="flex items-start gap-3">
                 <div className="w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
                   <CheckCircle2 className="w-3 h-3 text-primary" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-foreground">Get Access</p>
-                  <p className="text-xs text-muted-foreground">Start learning after payment</p>
+                  <p className="text-sm font-medium text-foreground">{t('payment_success.next_steps.email.title')}</p>
+                  <p className="text-xs text-muted-foreground">{t('payment_success.next_steps.email.desc')}</p>
                 </div>
               </div>
             </div>
@@ -314,7 +321,7 @@ export function CoursePaymentForm({ course }: CoursePaymentFormProps) {
         <Alert>
           <Shield className="h-4 w-4" />
           <AlertDescription className="text-xs">
-            Your personal information is secure and will only be used for payment processing and course access.
+            {t('payment.security.desc')}
           </AlertDescription>
         </Alert>
       </div>

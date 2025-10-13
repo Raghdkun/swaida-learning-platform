@@ -11,15 +11,18 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { BookOpen, Filter, Search as SearchIcon, Clock, X } from 'lucide-react';
 import { useMemo } from 'react';
+import { useTranslation } from '@/hooks/use-translation';
 
 interface CoursesSearchProps {
   courses: { data: Course[]; meta: PaginationMeta };
   filters: FilterOptions;
   current_filters: CourseFilters; // normalized by backend
-  searchQuery: string;           // original q= value
+  searchQuery: string;            // original q= value
 }
 
 export default function Search({ courses, filters, current_filters, searchQuery }: CoursesSearchProps) {
+  const { t } = useTranslation();
+
   const {
     courses: coursesData,
     meta,
@@ -51,7 +54,7 @@ export default function Search({ courses, filters, current_filters, searchQuery 
 
   return (
     <PublicLayout>
-      <Head title={`Search: ${searchQuery || ''}`} />
+      <Head title={`${t('search.badge')}: ${searchQuery || ''}`} />
 
       {/* Header / Hero */}
       <div className="relative bg-gradient-to-br from-primary/5 via-background to-secondary/5 border-b">
@@ -61,7 +64,7 @@ export default function Search({ courses, filters, current_filters, searchQuery 
             <div className="max-w-4xl mx-auto text-center space-y-4">
               <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-medium">
                 <SearchIcon className="h-4 w-4" />
-                Search Results
+                {t('search.badge')}
               </div>
               <h1 className="text-3xl lg:text-5xl font-bold tracking-tight">
                 <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
@@ -69,7 +72,7 @@ export default function Search({ courses, filters, current_filters, searchQuery 
                 </span>
               </h1>
               <p className="text-muted-foreground">
-                Refine your search below using categories, platforms, levels, tags, price, and certificate options.
+                {t('search.subtitle')}
               </p>
             </div>
           </div>
@@ -90,13 +93,13 @@ export default function Search({ courses, filters, current_filters, searchQuery 
                         <Filter className="h-5 w-5 text-primary" />
                       </div>
                       <div>
-                        <h2 className="text-lg font-semibold">Filters</h2>
-                        <p className="text-sm text-muted-foreground">Refine your results</p>
+                        <h2 className="text-lg font-semibold">{t('sidebar_filters.filters')}</h2>
+                        <p className="text-sm text-muted-foreground">{t('sidebar_filters.refine_results')}</p>
                       </div>
                     </div>
                     {hasActiveFilters && (
                       <Badge variant="secondary" className="text-xs font-medium px-3 py-1">
-                        {activeCount} active
+                        {t('filters.active', { count: activeCount })}
                       </Badge>
                     )}
                   </div>
@@ -122,19 +125,19 @@ export default function Search({ courses, filters, current_filters, searchQuery 
                   {meta?.total && meta.total > 0 ? (
                     <>
                       <BookOpen className="h-6 w-6 text-primary" />
-                      {meta.total.toLocaleString()} Course{meta.total !== 1 ? 's' : ''} Found
+                      {t('courses.results.courses_found', { count: meta.total })}
                     </>
                   ) : (
                     <>
                       <SearchIcon className="h-6 w-6 text-muted-foreground" />
-                      No Results for “{searchQuery}”
+                      {t('search.no_results', { query: searchQuery })}
                     </>
                   )}
                 </h2>
                 {meta?.total && meta.total > 0 && (
                   <p className="text-muted-foreground flex items-center gap-2 mt-1">
                     <Clock className="h-4 w-4" />
-                    Showing {meta.from} - {meta.to} of {meta.total} results
+                    {t('courses.results.showing', { from: meta.from, to: meta.to, total: meta.total })}
                   </p>
                 )}
               </div>
@@ -142,18 +145,18 @@ export default function Search({ courses, filters, current_filters, searchQuery 
               {/* Sort */}
               <div className="flex items-center gap-3">
                 <div className="flex items-center gap-2">
-                  <label className="text-sm font-medium text-muted-foreground">Sort by:</label>
+                  <label className="text-sm font-medium text-muted-foreground">{t('courses.sort.label')}</label>
                   <select
                     className="px-3 py-2 border border-border rounded-md bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                     value={liveFilters?.sort ?? 'newest'}
                     onChange={(e) => setFilters({ sort: e.target.value as any })}
                   >
-                    <option value="newest">Newest First</option>
-                    <option value="oldest">Oldest First</option>
-                    <option value="price-low">Price: Low to High</option>
-                    <option value="price-high">Price: High to Low</option>
-                    <option value="title">Title A-Z</option>
-                    <option value="popularity">Most Popular</option>
+                    <option value="newest">{t('courses.sort.newest')}</option>
+                    <option value="oldest">{t('courses.sort.oldest')}</option>
+                    <option value="price-low">{t('courses.sort.price_low')}</option>
+                    <option value="price-high">{t('courses.sort.price_high')}</option>
+                    <option value="title">{t('courses.sort.title')}</option>
+                    <option value="popularity">{t('courses.sort.popularity')}</option>
                   </select>
                 </div>
 
@@ -165,7 +168,7 @@ export default function Search({ courses, filters, current_filters, searchQuery 
                     className="shrink-0 border-2 hover:bg-destructive/5 hover:border-destructive/20 hover:text-destructive"
                   >
                     <X className="h-4 w-4 mr-2" />
-                    Reset Filters
+                    {t('search.reset_filters')}
                   </Button>
                 )}
               </div>

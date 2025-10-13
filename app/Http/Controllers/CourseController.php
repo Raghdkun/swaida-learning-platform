@@ -94,6 +94,30 @@ class CourseController extends Controller
         ]);
     }
 
+    /**
+     * Show payment form for a course
+     */
+    public function payment(int $id)
+    {
+        $data = $this->courseService->getCourseDetails($id);
+        
+        if (!$data) {
+            abort(404, 'Course not found');
+        }
+
+        $course = $data['course'];
+        
+        // Redirect to course page if it's free
+        if (!$course->is_paid) {
+            return redirect()->route('courses.show', $id)
+                ->with('message', 'This course is free and does not require payment.');
+        }
+        
+        return Inertia::render('Courses/Payment', [
+            'course' => $course,
+        ]);
+    }
+
     public function featured(): Response
     {
         $featuredCourses = $this->courseService->getFeaturedCourses(8);

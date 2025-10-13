@@ -9,7 +9,10 @@ use App\Http\Controllers\SponsorAllocationController;
 use App\Http\Controllers\SponsorAuthController;
 use App\Http\Controllers\SponsorPortalController;
 use App\Http\Controllers\SponsorPasswordController;
+use App\Http\Controllers\LanguageController;
 // Homepage with featured courses
+Route::post('/language', [LanguageController::class, 'switch'])->name('language.switch');
+
 Route::get('/', [CourseController::class, 'featured'])->name('home');
 // Public endpoint used by your React form
 Route::post('/courses/payment', [CoursePaymentRequestController::class, 'store'])
