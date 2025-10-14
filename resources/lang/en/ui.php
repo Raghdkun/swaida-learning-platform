@@ -3,6 +3,7 @@
 return [
     'home' => [
         'hero' => [
+            'badge' => 'Discover Your Next Learning Journey',
             'title' => 'Welcome to Your Learning Journey',
             'subtitle' => 'Discover thousands of courses from top platforms and advance your skills with our curated learning resources.',
             'browse_courses' => 'Browse All Courses',
