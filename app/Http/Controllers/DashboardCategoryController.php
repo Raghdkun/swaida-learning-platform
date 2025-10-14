@@ -50,19 +50,25 @@ class DashboardCategoryController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request): RedirectResponse
-    {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255|unique:categories,name',
-        ]);
+public function store(Request $request): RedirectResponse
+{
+    $validated = $request->validate([
+        'name' => 'required|string|max:255|unique:categories,name',
+        'name_ar' => 'nullable|string|max:255', // ← ADDED
+    ]);
 
-        $validated['slug'] = Str::slug($validated['name']);
+    $validated['slug'] = Str::slug($validated['name']);
 
-        Category::create($validated);
-
-        return redirect()->route('dashboard.categories.index')
-            ->with('success', 'Category created successfully.');
+    $category = Category::create($validated);
+    
+    // ← ADDED
+    if ($request->filled('name_ar')) {
+        $category->setTranslated('name', 'ar', $request->string('name_ar')->toString());
     }
+
+    return redirect()->route('dashboard.categories.index')
+        ->with('success', 'Category created successfully.');
+}
 
     /**
      * Display the specified resource.
@@ -72,38 +78,82 @@ class DashboardCategoryController extends Controller
         $category->load(['courses' => function ($query) {
             $query->with(['category', 'tags'])->latest()->take(10);
         }]);
+$category->load('translations', 'courses.tags');
+    $nameEn = $category->getRawOriginal('name');
 
-        return Inertia::render('Dashboard/Categories/Show', [
-            'category' => $category,
-        ]);
+       return Inertia::render('Dashboard/Categories/Show', [
+    'category' => [
+        'id' => $category->id,
+        'name' => $nameEn,       // localized by accessor
+        'slug' => $category->slug,
+        'courses_count' => $category->courses()->count(),
+        'courses' => $category->courses->map(fn ($c) => [
+            'id' => $c->id,
+            'title' => $c->title,        // localized by accessor
+            'level' => $c->level,        // canonical or localized based on your model setup
+            'tags'  => $c->tags->map(fn ($t) => ['id' => $t->id, 'name' => $t->name]), // localized
+        ]),
+        'translations' => $category->translations->map(fn ($t) => [
+            'locale' => $t->locale,
+            'field'  => $t->field,
+            'value'  => $t->value,
+        ]),
+    ],
+]);
     }
 
     /**
      * Show the form for editing the specified resource.
      */
     public function edit(Category $category): Response
-    {
-        return Inertia::render('Dashboard/Categories/Edit', [
-            'category' => $category,
-        ]);
-    }
+{
+    // Load translations to extract Arabic
+    $category->load('translations');
+
+    $nameAr = optional(
+        $category->translations
+            ->where('field', 'name')
+            ->where('locale', 'ar')
+            ->first()
+    )->value;
+
+    return Inertia::render('Dashboard/Categories/Edit', [
+        'category' => [
+            'id' => $category->id,
+            'name' => $category->name, // localized for current locale
+            'slug' => $category->slug,
+            'courses_count' => $category->courses()->count(),
+            'name_ar' => $nameAr, // ← add this
+            // You can also pass all translations if you want:
+            // 'translations' => $category->translations->map(fn ($t) => [
+            //   'locale' => $t->locale, 'field' => $t->field, 'value' => $t->value
+            // ]),
+        ],
+    ]);
+}
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Category $category): RedirectResponse
-    {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255|unique:categories,name,' . $category->id,
-        ]);
+public function update(Request $request, Category $category): RedirectResponse
+{
+    $validated = $request->validate([
+        'name' => 'required|string|max:255|unique:categories,name,' . $category->id,
+        'name_ar' => 'nullable|string|max:255', // ← ADDED
+    ]);
 
-        $validated['slug'] = Str::slug($validated['name']);
+    $validated['slug'] = Str::slug($validated['name']);
 
-        $category->update($validated);
-
-        return redirect()->route('dashboard.categories.index')
-            ->with('success', 'Category updated successfully.');
+    $category->update($validated);
+    
+    // ← ADDED
+    if ($request->has('name_ar')) {
+        $category->setTranslated('name', 'ar', $request->string('name_ar')->toString() ?: null);
     }
+
+    return redirect()->route('dashboard.categories.index')
+        ->with('success', 'Category updated successfully.');
+}
 
     /**
      * Remove the specified resource from storage.

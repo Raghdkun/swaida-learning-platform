@@ -16,26 +16,46 @@ class DashboardTagController extends Controller
      */
     public function index(Request $request): Response
     {
-        $query = Tag::query();
+        $query = Tag::query()->with('translations');
 
-        // Search functionality
+        // Search by base (English) name, and current-locale translations
         if ($request->filled('search')) {
-            $query->where('name', 'like', '%' . $request->search . '%');
+            $search = $request->string('search')->toString();
+            $locale = app()->getLocale();
+
+            $query->where(function ($q) use ($search, $locale) {
+                $q->where('name', 'like', '%' . $search . '%');
+
+                if ($locale !== 'en') {
+                    $q->orWhereHas('translations', function ($t) use ($search, $locale) {
+                        $t->where('locale', $locale)
+                          ->where('field', 'name')
+                          ->where('value', 'like', '%' . $search . '%');
+                    });
+                }
+            });
         }
 
-        // Sort functionality
-        $sortBy = $request->get('sort_by', 'name');
-        $sortOrder = $request->get('sort_order', 'asc');
-        
+        // Sort
+        $sortBy = $request->get('sort', 'name');
+        $direction = $request->get('direction', 'asc');
         if (in_array($sortBy, ['name', 'created_at'])) {
-            $query->orderBy($sortBy, $sortOrder);
+            $query->orderBy($sortBy, $direction);
+        } else {
+            $query->orderBy('name');
         }
 
-        $tags = $query->withCount('courses')->paginate(15)->withQueryString();
+        $tags = $query->withCount('courses')
+            ->paginate(15)
+            ->withQueryString();
 
         return Inertia::render('Dashboard/Tags/Index', [
             'tags' => $tags,
-            'filters' => $request->only(['search', 'sort_by', 'sort_order']),
+            'filters' => [
+                'search' => $request->get('search'),
+                'sort' => $sortBy,
+                'direction' => $direction,
+            ],
         ]);
     }
 
@@ -53,38 +73,95 @@ class DashboardTagController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255|unique:tags,name',
+            'name' => ['required','string','max:255','unique:tags,name'],
+            'name_ar' => ['nullable','string','max:255'], // Arabic optional
+            'slug' => ['nullable','string','max:255','unique:tags,slug'],
         ]);
 
-        $validated['slug'] = Str::slug($validated['name']);
+        $slug = $validated['slug'] ?? Str::slug($validated['name']);
 
-        Tag::create($validated);
+        $tag = Tag::create([
+            'name' => $validated['name'], // English base
+            'slug' => $slug,
+        ]);
 
-        return redirect()->route('dashboard.tags.index')
+        // Save Arabic translation if provided
+        if ($request->filled('name_ar')) {
+            $tag->setTranslated('name', 'ar', $request->string('name_ar')->toString());
+        }
+
+        return redirect()
+            ->route('dashboard.tags.index')
             ->with('success', 'Tag created successfully.');
     }
+public function show(Tag $tag): Response
+{
+    $tag->load([
+        'translations',
+        'courses' => fn($q) => $q->with(['category', 'tags'])->latest()->take(10),
+        'courses.category.translations',
+        'courses.tags.translations',
+    ]);
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Tag $tag): Response
-    {
-        $tag->load(['courses' => function ($query) {
-            $query->with(['category', 'tags'])->latest()->take(10);
-        }]);
+    $nameAr = optional(
+        $tag->translations->where('field','name')->where('locale','ar')->first()
+    )->value;
 
-        return Inertia::render('Dashboard/Tags/Show', [
-            'tag' => $tag,
-        ]);
-    }
+    $nameEn = $tag->getRawOriginal('name');
+    return Inertia::render('Dashboard/Tags/Show', [
+        'tag' => [
+            'id' => $tag->id,
+            'name' => $nameEn,     // localized for current locale
+            'slug' => $tag->slug,
+            'courses_count' => $tag->courses()->count(),
+
+            'name_en' => $nameEn,
+            'name_ar' => $nameAr,
+
+            // Only translations that belong to the Tag itself (already true) and expose explicitly
+            'translations' => $tag->translations
+                ->where('field', 'name')
+                ->map(fn($t) => [
+                    'locale' => $t->locale,
+                    'field'  => $t->field,
+                    'value'  => $t->value,
+                ])
+                ->values(),
+
+            'courses' => $tag->courses->map(fn($c) => [
+                'id' => $c->id,
+                'title' => $c->title, // localized by accessor
+                'level' => $c->level,
+                'category' => [
+                    'id' => $c->category?->id,
+                    'name' => $c->category?->name, // localized
+                ],
+            ])->values(),
+        ],
+    ]);
+}
+
 
     /**
      * Show the form for editing the specified resource.
      */
     public function edit(Tag $tag): Response
     {
+        $tag->load('translations');
+$nameAr = optional(
+        $tag->translations
+            ->where('field', 'name')
+            ->where('locale', 'ar')
+            ->first()
+    )->value;
         return Inertia::render('Dashboard/Tags/Edit', [
-            'tag' => $tag,
+            'tag' => [
+                'id' => $tag->id,
+                'name' => $tag->name, // Will auto-localize via accessor override
+                'slug' => $tag->slug,
+                'courses_count' => $tag->courses()->count(),
+                'name_ar' => $nameAr, // ← ADDED
+            ],
         ]);
     }
 
@@ -94,14 +171,27 @@ class DashboardTagController extends Controller
     public function update(Request $request, Tag $tag): RedirectResponse
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255|unique:tags,name,' . $tag->id,
+            'name' => ['required','string','max:255','unique:tags,name,' . $tag->id],
+            'name_ar' => ['nullable','string','max:255'], // Arabic optional
+            'slug' => ['nullable','string','max:255','unique:tags,slug,' . $tag->id],
         ]);
 
-        $validated['slug'] = Str::slug($validated['name']);
+        $slug = $validated['slug'] ?? Str::slug($validated['name']);
 
-        $tag->update($validated);
+        // Update base English
+        $tag->update([
+            'name' => $validated['name'],
+            'slug' => $slug,
+        ]);
 
-        return redirect()->route('dashboard.tags.index')
+        // Update Arabic translation (creates/updates/deletes)
+        if ($request->has('name_ar')) {
+            $value = $request->string('name_ar')->toString();
+            $tag->setTranslated('name', 'ar', $value !== '' ? $value : null);
+        }
+
+        return redirect()
+            ->route('dashboard.tags.index')
             ->with('success', 'Tag updated successfully.');
     }
 
@@ -110,43 +200,11 @@ class DashboardTagController extends Controller
      */
     public function destroy(Tag $tag): RedirectResponse
     {
-        // Check if tag has associated courses
-        if ($tag->courses()->count() > 0) {
-            return redirect()->route('dashboard.tags.index')
-                ->with('error', 'Cannot delete tag that has associated courses.');
-        }
-
+        $tag->translations()->delete();
         $tag->delete();
 
-        return redirect()->route('dashboard.tags.index')
+        return redirect()
+            ->route('dashboard.tags.index')
             ->with('success', 'Tag deleted successfully.');
-    }
-
-    /**
-     * Remove multiple tags from storage.
-     */
-    public function bulkDestroy(Request $request): RedirectResponse
-    {
-        $validated = $request->validate([
-            'ids' => 'required|array',
-            'ids.*' => 'exists:tags,id',
-        ]);
-
-        $tags = Tag::whereIn('id', $validated['ids'])->get();
-        
-        // Check if any tags have associated courses
-        $tagsWithCourses = $tags->filter(function ($tag) {
-            return $tag->courses()->count() > 0;
-        });
-
-        if ($tagsWithCourses->count() > 0) {
-            return redirect()->route('dashboard.tags.index')
-                ->with('error', 'Cannot delete tags that have associated courses.');
-        }
-
-        Tag::whereIn('id', $validated['ids'])->delete();
-
-        return redirect()->route('dashboard.tags.index')
-            ->with('success', count($validated['ids']) . ' tags deleted successfully.');
     }
 }

@@ -14,7 +14,9 @@ import {
   TrendingUp,
   ArrowRight,
   Search,
-  Filter
+  Filter,
+  Sparkles,
+  Zap
 } from 'lucide-react';
 import { useTranslation } from '@/hooks/use-translation';
 
@@ -98,7 +100,17 @@ export default function Home({ featuredCourses, stats, filterOptions }: HomeProp
           {/* Hero Section */}
           <div className="relative overflow-hidden bg-gradient-to-br from-primary via-primary/95 to-primary/90 dark:from-primary/90 dark:via-primary/80 dark:to-primary/70 rounded-xl p-6 sm:p-8 lg:p-12 mb-8 sm:mb-12 shadow-xl border border-primary/20 dark:border-primary/30">
             <div className="absolute inset-0 bg-grid-white/10 dark:bg-grid-white/5 [mask-image:linear-gradient(0deg,white,rgba(255,255,255,0.6))]" />
+            {/* Animated sparkles for visual interest */}
+            <div className="absolute top-4 right-4 opacity-20 animate-pulse">
+              <Sparkles className="h-8 w-8 text-white" />
+            </div>
             <div className="relative max-w-4xl">
+              <div className="flex items-center gap-2 mb-4">
+                <Zap className="h-5 w-5 text-primary-foreground/80 animate-bounce" />
+                <Badge variant="secondary" className="bg-primary-foreground/20 text-primary-foreground border-primary-foreground/30 backdrop-blur-sm">
+                  {t('home.hero.badge') || 'Discover Your Next Skill'}
+                </Badge>
+              </div>
               <h1 className="text-3xl sm:text-4xl lg:text-6xl font-bold mb-4 sm:mb-6 leading-tight text-primary-foreground">
                 {t('home.hero.title')}
               </h1>
@@ -110,7 +122,7 @@ export default function Home({ featuredCourses, stats, filterOptions }: HomeProp
                   <Button
                     size="lg"
                     variant="secondary"
-                    className="w-full sm:w-auto flex items-center justify-center gap-2 bg-background text-foreground hover:bg-background/90 shadow-lg hover:shadow-xl transition-all duration-200"
+                    className="w-full sm:w-auto flex items-center justify-center gap-2 bg-background text-foreground hover:bg-background/90 shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105 active:scale-95"
                   >
                     <BookOpen className="h-5 w-5" />
                     {t('home.hero.browse_courses')}
@@ -119,7 +131,7 @@ export default function Home({ featuredCourses, stats, filterOptions }: HomeProp
                 <Button
                   size="lg"
                   variant="outline"
-                  className="w-full sm:w-auto border-primary-foreground/30 bg-primary-foreground/10 text-primary-foreground hover:bg-primary-foreground/20 hover:border-primary-foreground/50 backdrop-blur-sm transition-all duration-200"
+                  className="w-full sm:w-auto border-primary-foreground/30 bg-primary-foreground/10 text-primary-foreground hover:bg-primary-foreground/20 hover:border-primary-foreground/50 backdrop-blur-sm transition-all duration-200 hover:scale-105 active:scale-95"
                   onClick={() => document.getElementById('quick-search')?.scrollIntoView({ behavior: 'smooth' })}
                 >
                   <Search className="h-5 w-5 mr-2" />
@@ -131,10 +143,10 @@ export default function Home({ featuredCourses, stats, filterOptions }: HomeProp
 
           {/* Stats Section */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8 sm:mb-12">
-            <Card className="border-border hover:shadow-md transition-shadow duration-200">
+            <Card className="border-border hover:shadow-md transition-all duration-300 hover:-translate-y-1 cursor-default">
               <CardContent className="p-4 sm:p-6">
                 <div className="flex items-center">
-                  <div className="p-2 bg-primary/10 dark:bg-primary/20 rounded-lg">
+                  <div className="p-2 bg-primary/10 dark:bg-primary/20 rounded-lg group-hover:scale-110 transition-transform duration-300">
                     <BookOpen className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
                   </div>
                   <div className="ml-3 sm:ml-4">
@@ -145,10 +157,10 @@ export default function Home({ featuredCourses, stats, filterOptions }: HomeProp
               </CardContent>
             </Card>
 
-            <Card className="border-border hover:shadow-md transition-shadow duration-200">
+            <Card className="border-border hover:shadow-md transition-all duration-300 hover:-translate-y-1 cursor-default">
               <CardContent className="p-4 sm:p-6">
                 <div className="flex items-center">
-                  <div className="p-2 bg-green-500/10 dark:bg-green-500/20 rounded-lg">
+                  <div className="p-2 bg-green-500/10 dark:bg-green-500/20 rounded-lg group-hover:scale-110 transition-transform duration-300">
                     <Users className="h-5 w-5 sm:h-6 sm:w-6 text-green-600 dark:text-green-500" />
                   </div>
                   <div className="ml-3 sm:ml-4">
@@ -159,10 +171,10 @@ export default function Home({ featuredCourses, stats, filterOptions }: HomeProp
               </CardContent>
             </Card>
 
-            <Card className="border-border hover:shadow-md transition-shadow duration-200">
+            <Card className="border-border hover:shadow-md transition-all duration-300 hover:-translate-y-1 cursor-default">
               <CardContent className="p-4 sm:p-6">
                 <div className="flex items-center">
-                  <div className="p-2 bg-purple-500/10 dark:bg-purple-500/20 rounded-lg">
+                  <div className="p-2 bg-purple-500/10 dark:bg-purple-500/20 rounded-lg group-hover:scale-110 transition-transform duration-300">
                     <TrendingUp className="h-5 w-5 sm:h-6 sm:w-6 text-purple-600 dark:text-purple-500" />
                   </div>
                   <div className="ml-3 sm:ml-4">
@@ -173,10 +185,10 @@ export default function Home({ featuredCourses, stats, filterOptions }: HomeProp
               </CardContent>
             </Card>
 
-            <Card className="border-border hover:shadow-md transition-shadow duration-200">
+            <Card className="border-border hover:shadow-md transition-all duration-300 hover:-translate-y-1 cursor-default">
               <CardContent className="p-4 sm:p-6">
                 <div className="flex items-center">
-                  <div className="p-2 bg-yellow-500/10 dark:bg-yellow-500/20 rounded-lg">
+                  <div className="p-2 bg-yellow-500/10 dark:bg-yellow-500/20 rounded-lg group-hover:scale-110 transition-transform duration-300">
                     <Award className="h-5 w-5 sm:h-6 sm:w-6 text-yellow-600 dark:text-yellow-500" />
                   </div>
                   <div className="ml-3 sm:ml-4">
@@ -189,14 +201,17 @@ export default function Home({ featuredCourses, stats, filterOptions }: HomeProp
           </div>
 
           {/* Quick Search Section */}
-          <Card id="quick-search" className="mb-8 sm:mb-12 border-border shadow-sm">
-            <CardHeader className="pb-4">
+          <Card id="quick-search" className="mb-8 sm:mb-12 border-border shadow-sm hover:shadow-md transition-shadow duration-300">
+            <CardHeader className="pb-4 bg-gradient-to-r from-primary/5 to-secondary/5 rounded-t-lg">
               <CardTitle className="flex items-center gap-2 text-foreground">
                 <Filter className="h-5 w-5 text-primary" />
                 {t('home.quick_search_section.title')}
               </CardTitle>
+              <p className="text-sm text-muted-foreground mt-2">
+                {t('home.quick_search_section.subtitle') || 'Refine your search and find the perfect course'}
+              </p>
             </CardHeader>
-            <CardContent>
+            <CardContent className="pt-6">
               <div className="space-y-6">
                 <CourseFiltersPanel
                   filters={quickFilters}
@@ -211,7 +226,7 @@ export default function Home({ featuredCourses, stats, filterOptions }: HomeProp
                   <Button
                     onClick={handleQuickSearch}
                     size="lg"
-                    className="flex items-center gap-2 bg-primary text-primary-foreground hover:bg-primary/90"
+                    className="flex items-center gap-2 bg-primary text-primary-foreground hover:bg-primary/90 transition-all duration-200 hover:scale-105 active:scale-95 shadow-lg"
                   >
                     <Search className="h-5 w-5" />
                     {t('home.quick_search_section.search_button')}
@@ -226,13 +241,16 @@ export default function Home({ featuredCourses, stats, filterOptions }: HomeProp
           <div className="mb-8 sm:mb-12">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 sm:mb-8 gap-4">
               <div>
-                <h2 className="text-2xl sm:text-3xl font-bold text-foreground">{t('home.featured.title')}</h2>
+                <div className="flex items-center gap-2 mb-2">
+                  <Award className="h-5 w-5 text-primary" />
+                  <h2 className="text-2xl sm:text-3xl font-bold text-foreground">{t('home.featured.title')}</h2>
+                </div>
                 <p className="text-muted-foreground mt-2">
                   {t('home.featured.subtitle')}
                 </p>
               </div>
               <Link href="/courses">
-                <Button variant="outline" className="flex items-center gap-2 border-border hover:bg-muted">
+                <Button variant="outline" className="flex items-center gap-2 border-border hover:bg-muted transition-all duration-200 hover:scale-105 active:scale-95">
                   {t('home.featured.view_all')}
                   <ArrowRight className="h-4 w-4" />
                 </Button>
@@ -242,9 +260,9 @@ export default function Home({ featuredCourses, stats, filterOptions }: HomeProp
             {featuredCourses.length > 0 ? (
               <CourseGrid courses={featuredCourses} />
             ) : (
-              <Card className="border-border">
+              <Card className="border-border hover:shadow-md transition-shadow duration-300">
                 <CardContent className="p-8 sm:p-12 text-center">
-                  <div className="w-20 h-20 sm:w-24 sm:h-24 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
+                  <div className="w-20 h-20 sm:w-24 sm:h-24 bg-muted rounded-full flex items-center justify-center mx-auto mb-4 hover:scale-105 transition-transform duration-300">
                     <BookOpen className="h-10 w-10 sm:h-12 sm:w-12 text-muted-foreground" />
                   </div>
                   <h3 className="text-lg font-semibold mb-2 text-foreground">{t('home.featured.no_courses')}</h3>
@@ -252,7 +270,9 @@ export default function Home({ featuredCourses, stats, filterOptions }: HomeProp
                     {t('home.featured.no_courses_desc')}
                   </p>
                   <Link href="/courses">
-                    <Button className="bg-primary text-primary-foreground hover:bg-primary/90">{t('home.hero.browse_courses')}</Button>
+                    <Button className="bg-primary text-primary-foreground hover:bg-primary/90 transition-all duration-200 hover:scale-105 active:scale-95">
+                      {t('home.hero.browse_courses')}
+                    </Button>
                   </Link>
                 </CardContent>
               </Card>
@@ -262,7 +282,10 @@ export default function Home({ featuredCourses, stats, filterOptions }: HomeProp
           {/* Popular Categories */}
           {filterOptions.categories && filterOptions.categories.length > 0 && (
             <div>
-              <h2 className="text-xl sm:text-2xl font-bold text-foreground mb-4 sm:mb-6">{t('home.popular_categories')}</h2>
+              <div className="flex items-center gap-2 mb-4 sm:mb-6">
+                <BookOpen className="h-5 w-5 text-primary" />
+                <h2 className="text-xl sm:text-2xl font-bold text-foreground">{t('home.popular_categories')}</h2>
+              </div>
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
                 {filterOptions.categories.slice(0, 8).map((category) => {
                   const count = category.courses_count ?? 0;
@@ -270,10 +293,10 @@ export default function Home({ featuredCourses, stats, filterOptions }: HomeProp
                     <Link
                       key={category.id}
                       href={`/courses?category=${category.slug}`}
-                      className="group"
+                      className="group block"
                     >
-                      <Card className="h-full transition-all duration-200 hover:shadow-md group-hover:border-primary border-border">
-                        <CardContent className="p-3 sm:p-4 text-center">
+                      <Card className="h-full transition-all duration-300 hover:shadow-md group-hover:border-primary border-border hover:-translate-y-1">
+                        <CardContent className="p-3 sm:p-4 text-center group-hover:bg-primary/5 transition-colors duration-200 rounded-lg">
                           <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors text-sm sm:text-base">
                             {category.name}
                           </h3>

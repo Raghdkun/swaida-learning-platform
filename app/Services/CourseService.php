@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Repositories\CourseRepository;
 use App\Repositories\CategoryRepository;
 use App\Repositories\TagRepository;
+use Illuminate\Database\Eloquent\Collection;
 
 class CourseService
 {
@@ -54,16 +55,16 @@ class CourseService
     public function getFilterOptions(): array
     {
         return [
-            'categories'   => $this->categoryRepository->getCategoriesWithCourses(),
-            'tags'         => $this->tagRepository->getPopularTags(20),
-            'platforms'    => $this->courseRepository->getUniquePlatforms(),
-            'levels'       => $this->courseRepository->getUniqueLevels(),
+            'categories'   => $this->categoryRepository->getCategoriesWithCourses(), // categories auto-localize via accessor
+            'tags'         => $this->tagRepository->getPopularTags(20),             // tags auto-localize
+            'platforms'    => $this->courseRepository->getUniquePlatforms(),        // canonical value list
+            'levels'       => $this->courseRepository->getUniqueLevels(),           // canonical value list
             'price_range'  => $this->courseRepository->getPriceRange(),
             'course_types' => $this->courseRepository->getCourseTypeCounts(),
         ];
     }
 
-    public function getRelatedCourses($course, int $limit = 4): \Illuminate\Database\Eloquent\Collection
+    public function getRelatedCourses($course, int $limit = 4): Collection
     {
         $tagIds = $course->tags->pluck('id')->toArray();
 
@@ -74,25 +75,28 @@ class CourseService
 
         $related = $this->courseRepository->getPaginatedCourses($filters, $limit);
 
+        // Ensure all localized data is available on the related collection
         return $related->getCollection()
+            ->load(['translations', 'category.translations', 'tags.translations'])
             ->filter(fn ($c) => $c->id !== $course->id)
             ->take($limit);
     }
 
-    public function getFeaturedCourses(int $limit = 6): \Illuminate\Database\Eloquent\Collection
+    public function getFeaturedCourses(int $limit = 6): Collection
     {
+        // Repository already eager-loads translations; return as-is
         return $this->courseRepository->getFeaturedCourses($limit);
     }
 
     public function getDashboardStats(): array
     {
         return [
-            'total_courses'     => $this->courseRepository->getPaginatedCourses([], 1)->total(),
-            'total_categories'  => $this->categoryRepository->getAll()->count(),
-            'total_tags'        => $this->tagRepository->getAll()->count(),
+            'total_courses'      => $this->courseRepository->getPaginatedCourses([], 1)->total(),
+            'total_categories'   => $this->categoryRepository->getAll()->count(),
+            'total_tags'         => $this->tagRepository->getAll()->count(),
             'courses_by_category'=> $this->courseRepository->getCoursesCountByCategory(),
-            'platforms'         => $this->courseRepository->getUniquePlatforms(),
-            'levels'            => $this->courseRepository->getUniqueLevels(),
+            'platforms'          => $this->courseRepository->getUniquePlatforms(),
+            'levels'             => $this->courseRepository->getUniqueLevels(),
         ];
     }
 
@@ -126,7 +130,7 @@ class CourseService
             }
         }
 
-        // Platform / Level
+        // Platform / Level (canonical values; display localized via accessors on models)
         if (!empty($filters['platform']) && is_string($filters['platform'])) {
             $sanitized['platform'] = trim($filters['platform']);
         }
@@ -159,7 +163,7 @@ class CourseService
         if (!empty($filters['course_type']) && in_array($filters['course_type'], ['free', 'paid'], true)) {
             $sanitized['course_type'] = $filters['course_type'];
         } elseif (!empty($filters['type']) && in_array($filters['type'], ['free', 'paid'], true)) {
-            // (backward compatibility)
+            // backward compatibility
             $sanitized['course_type'] = $filters['type'];
         }
 

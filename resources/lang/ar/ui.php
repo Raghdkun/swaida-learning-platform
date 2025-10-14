@@ -305,6 +305,9 @@ return [
         'copyright' => '© :year منصة سويداء التعليمية. جميع الحقوق محفوظة.',
     ],
     'sponsor' => [
+    'students_supported' => 'الطلاب المدعومون',
+    'total_allocations' => 'إجمالي التخصيصات',
+        'change_password' => 'تغيير كلمة المرور',
   'title' => 'بوابة الراعي',
   'welcome' => 'مرحباً، :name',
   'last_login' => 'آخر تسجيل دخول:',
@@ -345,6 +348,8 @@ return [
     'remember' => 'تذكرني',
     'submit' => 'تسجيل الدخول',
     'submitting' => 'جاري تسجيل الدخول...',
+    'need_help' => 'هل تحتاج مساعدة؟',
+    'contact_support' => 'تواصل مع الدعم.',
 ],
 'sponsor_change_password' => [
     'title' => 'تغيير كلمة المرور',
@@ -369,6 +374,7 @@ return [
     'certificate_included' => 'تشمل شهادة',
     'more_tags' => '+:count المزيد',
     'view_details' => 'عرض التفاصيل',
+    'view_course' => 'عرض الدورة',
 ],
 
 ];

@@ -10,7 +10,6 @@ use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Validation\Rule;
 
 class DashboardCourseController extends Controller
 {
@@ -54,7 +53,6 @@ class DashboardCourseController extends Controller
         // Sort functionality
         $sortBy = $request->get('sort', 'created_at');
         $sortDirection = $request->get('direction', 'desc');
-        
         $allowedSorts = ['title', 'created_at', 'updated_at', 'level', 'platform'];
         if (in_array($sortBy, $allowedSorts)) {
             $query->orderBy($sortBy, $sortDirection);
@@ -106,9 +104,14 @@ class DashboardCourseController extends Controller
             'tags' => 'array',
             'tags.*' => 'exists:tags,id',
             'price' => 'nullable|numeric|min:0',
+
+            // Arabic fields (optional)
+            'title_ar' => 'nullable|string|max:255',
+            'description_ar' => 'nullable|string',
+            'platform_ar' => 'nullable|string|max:100',
+            'level_ar' => 'nullable|string|max:100',
         ]);
 
-        // Handle image upload
         if ($request->hasFile('image')) {
             $imagePath = $request->file('image')->store('courses', 'public');
             $validated['image'] = $imagePath;
@@ -116,9 +119,16 @@ class DashboardCourseController extends Controller
 
         $course = Course::create($validated);
 
-        // Attach tags if provided
         if (!empty($validated['tags'])) {
             $course->tags()->attach($validated['tags']);
+        }
+
+        // Save Arabic translations if provided
+        foreach (['title', 'description', 'platform', 'level'] as $field) {
+            $arKey = "{$field}_ar";
+            if ($request->filled($arKey)) {
+                $course->setTranslated($field, 'ar', $request->string($arKey)->toString());
+            }
         }
 
         return redirect()->route('dashboard.courses.index')
@@ -128,14 +138,51 @@ class DashboardCourseController extends Controller
     /**
      * Display the specified course
      */
-    public function show(Course $course): Response
-    {
-        $course->load(['category', 'tags']);
+public function show(Course $course): \Inertia\Response
+{
+    $course->load(['category', 'tags', 'translations']);
 
-        return Inertia::render('Dashboard/Courses/Show', [
-            'course' => $course,
-        ]);
-    }
+    $titleEn = $course->getRawOriginal('title');
+    $titleAr = optional($course->translations->where('field','title')->where('locale','ar')->first())->value;
+
+    $descEn = $course->getRawOriginal('description');
+    $descAr = optional($course->translations->where('field','description')->where('locale','ar')->first())->value;
+
+    $platEn = $course->getRawOriginal('platform');
+    $platAr = optional($course->translations->where('field','platform')->where('locale','ar')->first())->value;
+
+    $levelEn = $course->getRawOriginal('level');
+    $levelAr = optional($course->translations->where('field','level')->where('locale','ar')->first())->value;
+    return Inertia::render('Dashboard/Courses/Show', [
+        'course' => [
+            'id' => $course->id,
+            'title' => $titleEn,                 // localized for current locale
+            'title_en' => $titleEn,                    // explicit EN
+            'title_ar' => $titleAr,                    // explicit AR
+            'description' => $course->description,     // localized
+            'description_en' => $descEn,
+            'description_ar' => $descAr,
+            'platform' => $course->platform,           // localized
+            'platform_en' => $platEn,
+            'platform_ar' => $platAr,
+            'level' => $course->level,                 // localized or code per your model
+            'level_en' => $levelEn,
+            'level_ar' => $levelAr,
+            'image_url' => $course->image_url,
+            'is_paid' => $course->is_paid,
+            'external_url' => $course->external_url,
+            'formatted_price' => $course->formatted_price,
+            'have_cert' => $course->have_cert,
+            'category' => [
+                'id' => $course->category?->id,
+                'name' => $course->category?->name,
+            ],
+            'tags' => $course->tags->map(fn($t) => ['id' => $t->id, 'name' => $t->name]),
+        ],
+    ]);
+}
+
+
 
     /**
      * Show the form for editing the specified course
@@ -146,8 +193,20 @@ class DashboardCourseController extends Controller
         $categories = Category::orderBy('name')->get();
         $tags = Tag::orderBy('name')->get();
 
+        // Optional: include Arabic values for prefill
+        $course->load('translations');
+        $titleAr = optional($course->translations->where('field','title')->where('locale','ar')->first())->value;
+        $descAr = optional($course->translations->where('field','description')->where('locale','ar')->first())->value;
+        $platformAr = optional($course->translations->where('field','platform')->where('locale','ar')->first())->value;
+        $levelAr = optional($course->translations->where('field','level')->where('locale','ar')->first())->value;
+
         return Inertia::render('Dashboard/Courses/Edit', [
-            'course' => $course,
+            'course' => array_merge($course->toArray(), [
+                'title_ar' => $titleAr,
+                'description_ar' => $descAr,
+                'platform_ar' => $platformAr,
+                'level_ar' => $levelAr,
+            ]),
             'categories' => $categories,
             'tags' => $tags,
         ]);
@@ -171,26 +230,38 @@ class DashboardCourseController extends Controller
             'tags' => 'array',
             'tags.*' => 'exists:tags,id',
             'price' => 'nullable|numeric|min:0',
+
+            // Arabic fields
+            'title_ar' => 'nullable|string|max:255',
+            'description_ar' => 'nullable|string',
+            'platform_ar' => 'nullable|string|max:100',
+            'level_ar' => 'nullable|string|max:100',
         ]);
 
-        // Handle image upload
         if ($request->hasFile('image')) {
-            // Delete old image if exists
             if ($course->image && Storage::disk('public')->exists($course->image)) {
                 Storage::disk('public')->delete($course->image);
             }
-            
             $imagePath = $request->file('image')->store('courses', 'public');
             $validated['image'] = $imagePath;
         }
-
+else{
+            unset($validated['image']);
+}
         $course->update($validated);
 
-        // Sync tags
         if (isset($validated['tags'])) {
             $course->tags()->sync($validated['tags']);
         } else {
             $course->tags()->detach();
+        }
+
+        // Update Arabic translations
+        foreach (['title', 'description', 'platform', 'level'] as $field) {
+            $arKey = "{$field}_ar";
+            if ($request->has($arKey)) {
+                $course->setTranslated($field, 'ar', $request->string($arKey)->toString() ?: null);
+            }
         }
 
         return redirect()->route('dashboard.courses.index')
@@ -206,7 +277,7 @@ class DashboardCourseController extends Controller
         if ($course->image && Storage::disk('public')->exists($course->image)) {
             Storage::disk('public')->delete($course->image);
         }
-        
+
         $course->tags()->detach();
         $course->delete();
 
@@ -225,13 +296,11 @@ class DashboardCourseController extends Controller
         ]);
 
         $courses = Course::whereIn('id', $validated['ids'])->get();
-        
+
         foreach ($courses as $course) {
-            // Delete image file if exists
             if ($course->image && Storage::disk('public')->exists($course->image)) {
                 Storage::disk('public')->delete($course->image);
             }
-            
             $course->tags()->detach();
             $course->delete();
         }

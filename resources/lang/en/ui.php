@@ -295,6 +295,9 @@ return [
         'copyright' => '© :year Swaida Learning Platform. All rights reserved.',
     ],
     'sponsor' => [
+        'students_supported' => 'Students Supported',
+        'total_allocations' => 'Total Allocations',
+        'change_password' => 'Change Password',
   'title' => 'My Sponsor Portal',
   'welcome' => 'Welcome, :name',
   'last_login' => 'Last login:',
@@ -335,6 +338,8 @@ return [
     'remember' => 'Remember me',
     'submit' => 'Login',
     'submitting' => 'Logging in...',
+    'need_help' => 'Need help?',
+    'contact_support' => 'Contact support.',
 ],
 'sponsor_change_password' => [
     'title' => 'Change Password',
@@ -359,6 +364,7 @@ return [
     'certificate_included' => 'Certificate included',
     'more_tags' => '+:count more',
     'view_details' => 'View Details',
+    'view_course' => 'View Course',
 ],
 
 ];

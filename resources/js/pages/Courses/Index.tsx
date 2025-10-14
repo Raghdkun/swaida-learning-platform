@@ -21,6 +21,9 @@ import {
   Gift,
   X,
   ChevronDown,
+  Sparkles,
+  RotateCcw,
+  Zap,
 } from 'lucide-react';
 import { useTranslation } from '@/hooks/use-translation';
 
@@ -124,36 +127,39 @@ export default function Index({ courses, categories, filters, current_filters }:
       <Head title={t('common.courses')} />
 
       {/* ===== Hero Section ===== */}
-      <div className="relative bg-gradient-to-br from-primary/5 via-background to-secondary/5 border-b">
+      <div className="relative bg-gradient-to-br from-primary/5 via-background to-secondary/5 border-b overflow-hidden">
         <div className="absolute inset-0 bg-grid-white/[0.02] bg-grid-16" />
+        {/* Animated background elements */}
+        <div className="absolute top-10 left-10 w-20 h-20 bg-primary/10 rounded-full blur-xl animate-pulse"></div>
+        <div className="absolute bottom-10 right-10 w-16 h-16 bg-secondary/10 rounded-full blur-xl animate-pulse delay-1000"></div>
         <div className="relative">
           <div className="container mx-auto px-4 py-16 lg:py-20">
             <div className="max-w-4xl mx-auto text-center space-y-8">
-              <div className="space-y-6">
-                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-medium">
+              <div className="space-y-6 animate-in fade-in-50 duration-700">
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-medium transition-all duration-300 hover:scale-105 hover:bg-primary/20">
                   <BookOpen className="h-4 w-4" />
                   {t('courses.hero.badge')}
                 </div>
                 <div className="space-y-4">
-                  <h1 className="text-4xl lg:text-6xl font-bold tracking-tight">
+                  <h1 className="text-4xl lg:text-6xl font-bold tracking-tight animate-in slide-in-from-bottom-5 duration-500">
                     <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
                       {t('courses.hero.title')}
                     </span>
                   </h1>
-                  <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+                  <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed animate-in fade-in-50 duration-700 delay-200">
                     {t('courses.hero.subtitle')}
                   </p>
                 </div>
               </div>
 
               {/* Stats Cards */}
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mt-12">
-                <Card className="border-0 bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-blue-950/50 dark:to-blue-900/30 transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mt-12 animate-in fade-in-50 duration-700 delay-300">
+                <Card className="border-0 bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-blue-950/50 dark:to-blue-900/30 transition-all duration-300 hover:shadow-lg hover:-translate-y-2 group cursor-pointer">
                   <CardContent className="p-5 text-center">
-                    <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-blue-500/10 mb-3">
+                    <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-blue-500/10 mb-3 group-hover:scale-110 transition-transform duration-300">
                       <BookOpen className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                     </div>
-                    <div className="text-2xl font-bold text-blue-700 dark:text-blue-300 mb-1">
+                    <div className="text-2xl font-bold text-blue-700 dark:text-blue-300 mb-1 group-hover:scale-105 transition-transform duration-300">
                       {meta?.total?.toLocaleString() ?? 0}
                     </div>
                     <div className="text-sm font-medium text-blue-600/80 dark:text-blue-400/80">
@@ -162,12 +168,12 @@ export default function Index({ courses, categories, filters, current_filters }:
                   </CardContent>
                 </Card>
 
-                <Card className="border-0 bg-gradient-to-br from-green-50 to-green-100/50 dark:from-green-950/50 dark:to-green-900/30 transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
+                <Card className="border-0 bg-gradient-to-br from-green-50 to-green-100/50 dark:from-green-950/50 dark:to-green-900/30 transition-all duration-300 hover:shadow-lg hover:-translate-y-2 group cursor-pointer">
                   <CardContent className="p-5 text-center">
-                    <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-green-500/10 mb-3">
+                    <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-green-500/10 mb-3 group-hover:scale-110 transition-transform duration-300">
                       <Gift className="h-5 w-5 text-green-600 dark:text-green-400" />
                     </div>
-                    <div className="text-2xl font-bold text-green-700 dark:text-green-300 mb-1">
+                    <div className="text-2xl font-bold text-green-700 dark:text-green-300 mb-1 group-hover:scale-105 transition-transform duration-300">
                       {filters?.course_types?.free?.toLocaleString?.() ?? 0}
                     </div>
                     <div className="text-sm font-medium text-green-600/80 dark:text-green-400/80">
@@ -176,12 +182,12 @@ export default function Index({ courses, categories, filters, current_filters }:
                   </CardContent>
                 </Card>
 
-                <Card className="border-0 bg-gradient-to-br from-purple-50 to-purple-100/50 dark:from-purple-950/50 dark:to-purple-900/30 transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
+                <Card className="border-0 bg-gradient-to-br from-purple-50 to-purple-100/50 dark:from-purple-950/50 dark:to-purple-900/30 transition-all duration-300 hover:shadow-lg hover:-translate-y-2 group cursor-pointer">
                   <CardContent className="p-5 text-center">
-                    <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-purple-500/10 mb-3">
+                    <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-purple-500/10 mb-3 group-hover:scale-110 transition-transform duration-300">
                       <Award className="h-5 w-5 text-purple-600 dark:text-purple-400" />
                     </div>
-                    <div className="text-2xl font-bold text-purple-700 dark:text-purple-300 mb-1">
+                    <div className="text-2xl font-bold text-purple-700 dark:text-purple-300 mb-1 group-hover:scale-105 transition-transform duration-300">
                       {categories?.length?.toLocaleString?.() ?? 0}
                     </div>
                     <div className="text-sm font-medium text-purple-600/80 dark:text-purple-400/80">
@@ -190,12 +196,12 @@ export default function Index({ courses, categories, filters, current_filters }:
                   </CardContent>
                 </Card>
 
-                <Card className="border-0 bg-gradient-to-br from-orange-50 to-orange-100/50 dark:from-orange-950/50 dark:to-orange-900/30 transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
+                <Card className="border-0 bg-gradient-to-br from-orange-50 to-orange-100/50 dark:from-orange-950/50 dark:to-orange-900/30 transition-all duration-300 hover:shadow-lg hover:-translate-y-2 group cursor-pointer">
                   <CardContent className="p-5 text-center">
-                    <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-orange-500/10 mb-3">
+                    <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-orange-500/10 mb-3 group-hover:scale-110 transition-transform duration-300">
                       <Users className="h-5 w-5 text-orange-600 dark:text-orange-400" />
                     </div>
-                    <div className="text-2xl font-bold text-orange-700 dark:text-orange-300 mb-1">
+                    <div className="text-2xl font-bold text-orange-700 dark:text-orange-300 mb-1 group-hover:scale-105 transition-transform duration-300">
                       {filters?.platforms?.length?.toLocaleString?.() ?? 0}
                     </div>
                     <div className="text-sm font-medium text-orange-600/80 dark:text-orange-400/80">
@@ -210,12 +216,12 @@ export default function Index({ courses, categories, filters, current_filters }:
       </div>
 
       {/* ===== Main Content Area ===== */}
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-8 animate-in fade-in-50 duration-500">
         <div className="flex flex-col lg:flex-row gap-8">
           
           {/* ===== Sidebar Filters ===== */}
           <div className="lg:w-80 flex-shrink-0">
-            <Card className="sticky top-24 border-2 border-primary/10 shadow-sm">
+            <Card className="sticky top-24 border-2 border-primary/10 shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1">
               <CardContent className="p-6">
                 <SidebarCourseFilters
                   filters={liveFilters}
@@ -233,18 +239,18 @@ export default function Index({ courses, categories, filters, current_filters }:
             
             {/* ===== Sticky Controls Bar ===== */}
             <div
-              className={`sticky top-0 z-30 bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b ${
-                elevated ? 'shadow-sm' : ''
+              className={`sticky top-0 z-30 bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b transition-all duration-300 ${
+                elevated ? 'shadow-lg' : 'shadow-sm'
               }`}
             >
               <div className="py-4 space-y-4">
                 {/* Title + Results Info */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div className="space-y-1">
-                    <h2 className="text-2xl font-bold flex items-center gap-2">
+                    <h2 className="text-2xl font-bold flex items-center gap-2 animate-in slide-in-from-left-5 duration-500">
                       {meta?.total && meta.total > 0 ? (
                         <>
-                          <BookOpen className="h-6 w-6 text-primary" />
+                          <BookOpen className="h-6 w-6 text-primary animate-pulse" />
                           {t('courses.results.courses_found', { count: meta.total })}
                         </>
                       ) : (
@@ -255,7 +261,7 @@ export default function Index({ courses, categories, filters, current_filters }:
                       )}
                     </h2>
                     {meta?.total && meta.total > 0 && (
-                      <p className="text-muted-foreground flex items-center gap-2 text-sm">
+                      <p className="text-muted-foreground flex items-center gap-2 text-sm animate-in fade-in-50 duration-500 delay-200">
                         <Clock className="h-4 w-4" />
                         {t('courses.results.showing', { from: meta.from, to: meta.to, total: meta.total })}
                       </p>
@@ -268,9 +274,9 @@ export default function Index({ courses, categories, filters, current_filters }:
                       <label className="text-sm font-medium text-muted-foreground whitespace-nowrap">
                         {t('courses.sort.label')}
                       </label>
-                      <div className="relative">
+                      <div className="relative group">
                         <select
-                          className="appearance-none pl-3 pr-8 py-2 border border-border rounded-md bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary min-w-[140px]"
+                          className="appearance-none pl-3 pr-8 py-2 border border-border rounded-md bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary min-w-[140px] transition-all duration-200 group-hover:scale-105 group-hover:border-primary/50"
                           value={liveFilters?.sort ?? 'newest'}
                           onChange={(e) => setFilters({ sort: e.target.value as any })}
                         >
@@ -281,7 +287,7 @@ export default function Index({ courses, categories, filters, current_filters }:
                           <option value="title">{t('courses.sort.title')}</option>
                           <option value="popularity">{t('courses.sort.popularity')}</option>
                         </select>
-                        <ChevronDown className="h-4 w-4 absolute right-2 top-1/2 transform -translate-y-1/2 text-muted-foreground pointer-events-none" />
+                        <ChevronDown className="h-4 w-4 absolute right-2 top-1/2 transform -translate-y-1/2 text-muted-foreground pointer-events-none transition-transform duration-200 group-hover:scale-110" />
                       </div>
                     </div>
 
@@ -290,9 +296,9 @@ export default function Index({ courses, categories, filters, current_filters }:
                         variant="outline"
                         onClick={resetFilters}
                         disabled={loading}
-                        className="shrink-0 border-2 hover:bg-destructive/5 hover:border-destructive/20 hover:text-destructive"
+                        className="shrink-0 border-2 hover:bg-destructive/5 hover:border-destructive/20 hover:text-destructive transition-all duration-200 hover:scale-105 active:scale-95"
                       >
-                        <X className="h-4 w-4 mr-2" />
+                        <RotateCcw className="h-4 w-4 mr-2" />
                         {t('courses.filters.reset_all')}
                       </Button>
                     )}
@@ -301,19 +307,20 @@ export default function Index({ courses, categories, filters, current_filters }:
 
                 {/* Active Filter Chips */}
                 {hasActiveFilters && (
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="text-sm font-medium text-muted-foreground mr-1">
+                  <div className="flex items-center gap-2 flex-wrap animate-in slide-in-from-top-5 duration-500">
+                    <span className="text-sm font-medium text-muted-foreground mr-1 flex items-center gap-2">
+                      <FilterIcon className="h-4 w-4 text-primary" />
                       {t('courses.filters.active_filters')}
                     </span>
                     {chips.map((chip, idx) => (
                       <Badge
                         key={`${chip.key}-${chip.value ?? idx}`}
                         variant="secondary"
-                        className="flex items-center gap-2 px-3 py-1.5 bg-background border"
+                        className="flex items-center gap-2 px-3 py-1.5 bg-background border transition-all duration-200 hover:scale-105 cursor-pointer group"
                       >
                         <span className="text-xs">{chip.label}</span>
                         <X
-                          className="h-3 w-3 cursor-pointer hover:text-destructive transition-colors"
+                          className="h-3 w-3 cursor-pointer hover:text-destructive transition-all duration-200 hover:scale-125"
                           onClick={() => removeChip(chip.key, chip.value)}
                         />
                       </Badge>
@@ -321,7 +328,7 @@ export default function Index({ courses, categories, filters, current_filters }:
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="text-xs h-7 px-3"
+                      className="text-xs h-7 px-3 transition-all duration-200 hover:scale-105 hover:bg-destructive/5 hover:text-destructive"
                       onClick={resetFilters}
                     >
                       <X className="h-3 w-3 mr-1" />
@@ -339,7 +346,7 @@ export default function Index({ courses, categories, filters, current_filters }:
 
             {/* ===== Pagination ===== */}
             {!!meta?.last_page && meta.last_page > 1 && (
-              <div className="mt-8">
+              <div className="mt-8 animate-in fade-in-50 duration-500">
                 <CoursePagination
                   meta={meta}
                   onPageChange={(page) => setFilters({ page })}
@@ -349,28 +356,28 @@ export default function Index({ courses, categories, filters, current_filters }:
             )}
 
             {/* ===== Quick Stats ===== */}
-            <div className="mt-12">
-              <Card className="border-0 bg-gradient-to-br from-muted/30 to-muted/10">
+            <div className="mt-12 animate-in fade-in-50 duration-500 delay-300">
+              <Card className="border-0 bg-gradient-to-br from-muted/30 to-muted/10 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
                 <CardContent className="p-6">
                   <h3 className="font-semibold mb-4 flex items-center gap-2">
-                    <Star className="h-4 w-4 text-primary" />
+                    <Star className="h-4 w-4 text-primary animate-pulse" />
                     {t('courses.quick_stats.title')}
                   </h3>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <div className="flex flex-col items-center text-center p-4 rounded-lg bg-background/50 border">
-                      <div className="text-2xl font-bold text-primary mb-1">
+                    <div className="flex flex-col items-center text-center p-4 rounded-lg bg-background/50 border hover:bg-background/70 transition-all duration-300 hover:scale-105 group cursor-pointer">
+                      <div className="text-2xl font-bold text-primary mb-1 group-hover:scale-110 transition-transform duration-300">
                         {meta?.total?.toLocaleString() ?? 0}
                       </div>
                       <div className="text-sm text-muted-foreground">{t('courses.quick_stats.results_found')}</div>
                     </div>
-                    <div className="flex flex-col items-center text-center p-4 rounded-lg bg-background/50 border">
-                      <div className="text-2xl font-bold text-green-600 mb-1">
+                    <div className="flex flex-col items-center text-center p-4 rounded-lg bg-background/50 border hover:bg-background/70 transition-all duration-300 hover:scale-105 group cursor-pointer">
+                      <div className="text-2xl font-bold text-green-600 mb-1 group-hover:scale-110 transition-transform duration-300">
                         {filters?.course_types?.free?.toLocaleString?.() ?? 0}
                       </div>
                       <div className="text-sm text-muted-foreground">{t('courses.quick_stats.free_courses')}</div>
                     </div>
-                    <div className="flex flex-col items-center text-center p-4 rounded-lg bg-background/50 border">
-                      <div className="text-2xl font-bold text-purple-600 mb-1">
+                    <div className="flex flex-col items-center text-center p-4 rounded-lg bg-background/50 border hover:bg-background/70 transition-all duration-300 hover:scale-105 group cursor-pointer">
+                      <div className="text-2xl font-bold text-purple-600 mb-1 group-hover:scale-110 transition-transform duration-300">
                         {categories?.length ?? 0}
                       </div>
                       <div className="text-sm text-muted-foreground">{t('courses.quick_stats.categories')}</div>

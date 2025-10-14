@@ -22,7 +22,6 @@ class CourseController extends Controller
         $perPage = (int) $request->get('per_page', 12);
 
         $data = $this->courseService->getCourses($filters, $perPage);
-
         return Inertia::render('Courses/Index', [
             'courses'          => [
                 'data' => $data['courses']->items(),
@@ -123,7 +122,6 @@ class CourseController extends Controller
         $featuredCourses = $this->courseService->getFeaturedCourses(8);
         $filterOptions   = $this->courseService->getFilterOptions();
         $stats           = $this->courseService->getDashboardStats();
-
         return Inertia::render('Home', [
             'featuredCourses' => $featuredCourses,
             'filterOptions'   => $filterOptions,

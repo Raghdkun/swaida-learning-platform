@@ -8,30 +8,17 @@ use Illuminate\Pagination\LengthAwarePaginator;
 
 class CourseRepository
 {
-    /**
-     * Get paginated courses with filters and search
-     *
-     * Expects normalized filter keys:
-     * - search: string
-     * - category_id: int
-     * - platform: string
-     * - level: string (beginner|intermediate|advanced)
-     * - have_cert: bool
-     * - tags: array<int> (tag IDs)
-     * - course_type: 'free'|'paid'
-     * - min_price: float
-     * - max_price: float
-     * - sort: 'newest'|'oldest'|'price-low'|'price-high'|'title'|'popularity'
-     */
     public function getPaginatedCourses(array $filters = [], int $perPage = 12): LengthAwarePaginator
     {
         $query = Course::query()
-            ->with(['category', 'tags']);
+            ->with(['category.translations', 'tags.translations', 'translations']); // ← ADDED translations eager-load
 
-        // Search across title, description, category name, tag name
+        // Search across title, description, category name, tag name, AND translations
         if (!empty($filters['search'])) {
             $search = $filters['search'];
-            $query->where(function (Builder $q) use ($search) {
+            $locale = app()->getLocale();
+            
+            $query->where(function (Builder $q) use ($search, $locale) {
                 $q->where('title', 'like', "%{$search}%")
                     ->orWhere('description', 'like', "%{$search}%")
                     ->orWhereHas('category', function (Builder $categoryQuery) use ($search) {
@@ -40,15 +27,23 @@ class CourseRepository
                     ->orWhereHas('tags', function (Builder $tagQuery) use ($search) {
                         $tagQuery->where('name', 'like', "%{$search}%");
                     });
+                
+                // ← ADDED: search translations for current locale
+                if ($locale !== 'en') {
+                    $q->orWhereHas('translations', function (Builder $transQuery) use ($search, $locale) {
+                        $transQuery->where('locale', $locale)
+                                   ->whereIn('field', ['title', 'description', 'platform', 'level'])
+                                   ->where('value', 'like', "%{$search}%");
+                    });
+                }
             });
         }
 
-        // Category ID (normalized in service)
+        // Rest of filters remain unchanged...
         if (!empty($filters['category_id'])) {
             $query->where('category_id', (int) $filters['category_id']);
         }
 
-        // Simple equality filters
         if (!empty($filters['platform'])) {
             $query->where('platform', $filters['platform']);
         }
@@ -56,12 +51,10 @@ class CourseRepository
             $query->where('level', $filters['level']);
         }
 
-        // Boolean filter
         if (array_key_exists('have_cert', $filters)) {
             $query->where('have_cert', (bool) $filters['have_cert']);
         }
 
-        // Tags as ID array (normalized in service)
         if (!empty($filters['tags']) && is_array($filters['tags'])) {
             $tagIds = array_filter(array_map('intval', $filters['tags']));
             if (!empty($tagIds)) {
@@ -71,7 +64,6 @@ class CourseRepository
             }
         }
 
-        // Free/Paid (proper grouping)
         if (!empty($filters['course_type'])) {
             $query->where(function (Builder $q) use ($filters) {
                 if ($filters['course_type'] === 'free') {
@@ -82,7 +74,6 @@ class CourseRepository
             });
         }
 
-        // Price range
         if (isset($filters['min_price']) && is_numeric($filters['min_price'])) {
             $query->where('price', '>=', (float) $filters['min_price']);
         }
@@ -90,7 +81,6 @@ class CourseRepository
             $query->where('price', '<=', (float) $filters['max_price']);
         }
 
-        // Sorting
         switch ($filters['sort'] ?? 'newest') {
             case 'oldest':
                 $query->orderBy('created_at', 'asc');
@@ -105,8 +95,6 @@ class CourseRepository
                 $query->orderBy('title', 'asc');
                 break;
             case 'popularity':
-                // If you later add a "popularity" metric, adjust here.
-                // Fallback to newest for now.
                 $query->orderBy('created_at', 'desc');
                 break;
             case 'newest':
@@ -118,17 +106,12 @@ class CourseRepository
         return $query->paginate($perPage);
     }
 
-    /**
-     * Get course by ID with relationships
-     */
-    public function findWithRelations(int $id): ?\App\Models\Course
+    public function findWithRelations(int $id): ?Course
     {
-        return Course::with(['category', 'tags'])->find($id);
+        return Course::with(['category.translations', 'tags.translations', 'translations'])->find($id); // ← ADDED translations
     }
 
-    /**
-     * Get all unique platforms
-     */
+    // Rest of methods unchanged...
     public function getUniquePlatforms(): array
     {
         return Course::whereNotNull('platform')
@@ -138,9 +121,6 @@ class CourseRepository
             ->toArray();
     }
 
-    /**
-     * Get all unique levels
-     */
     public function getUniqueLevels(): array
     {
         return Course::whereNotNull('level')
@@ -150,9 +130,6 @@ class CourseRepository
             ->toArray();
     }
 
-    /**
-     * Get courses count by category
-     */
     public function getCoursesCountByCategory(): array
     {
         return Course::selectRaw('category_id, count(*) as count')
@@ -165,21 +142,15 @@ class CourseRepository
             ->toArray();
     }
 
-    /**
-     * Get featured courses (example logic)
-     */
     public function getFeaturedCourses(int $limit = 6): \Illuminate\Database\Eloquent\Collection
     {
-        return Course::with(['category', 'tags'])
+        return Course::with(['category.translations', 'tags.translations', 'translations'])->where('have_cert', true)
             ->where('have_cert', true)
             ->orderBy('created_at', 'desc')
             ->limit($limit)
             ->get();
     }
 
-    /**
-     * Get price range for filtering
-     */
     public function getPriceRange(): array
     {
         $prices = Course::whereNotNull('price')
@@ -193,9 +164,6 @@ class CourseRepository
         ];
     }
 
-    /**
-     * Get course type counts
-     */
     public function getCourseTypeCounts(): array
     {
         $free = Course::where(function (Builder $q) {

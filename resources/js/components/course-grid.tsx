@@ -26,7 +26,7 @@ export function CourseGrid({ courses, loading = false, className }: CourseGridPr
     return (
       <div className={`flex flex-col items-center justify-center py-16 px-4 ${className || ''}`}>
         <div className="max-w-md mx-auto text-center space-y-4">
-          <div className="w-16 h-16 mx-auto bg-muted rounded-full flex items-center justify-center" aria-hidden>
+          <div className="w-16 h-16 mx-auto bg-muted rounded-full flex items-center justify-center hover:scale-110 transition-transform duration-300" aria-hidden>
             <svg className="w-8 h-8 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path
                 strokeLinecap="round"
@@ -58,45 +58,47 @@ export function CourseGrid({ courses, loading = false, className }: CourseGridPr
 
 function CourseCardSkeleton() {
   return (
-    <div className="border rounded-lg p-4 space-y-4 border-border bg-card h-full flex flex-col">
-      {/* Image skeleton */}
-      <Skeleton className="aspect-video w-full rounded-lg bg-muted flex-shrink-0" />
+    <div className="border rounded-lg p-4 space-y-4 border-border bg-card h-full flex flex-col animate-pulse">
+      {/* Image skeleton with shimmer effect */}
+      <div className="aspect-video w-full rounded-lg bg-gradient-to-r from-muted via-muted/50 to-muted flex-shrink-0 relative overflow-hidden">
+        <div className="absolute inset-0 -translate-x-full animate-[shimmer_2s_infinite] bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+      </div>
 
       {/* Header skeleton */}
       <div className="space-y-2 flex-shrink-0">
         <div className="flex justify-between">
-          <Skeleton className="h-5 w-16 bg-muted" />
-          <Skeleton className="h-5 w-20 bg-muted" />
+          <div className="h-5 w-16 bg-muted rounded"></div>
+          <div className="h-5 w-20 bg-muted rounded"></div>
         </div>
-        <Skeleton className="h-6 w-full bg-muted" />
-        <Skeleton className="h-6 w-3/4 bg-muted" />
+        <div className="h-6 w-full bg-muted rounded"></div>
+        <div className="h-6 w-3/4 bg-muted rounded"></div>
       </div>
 
       {/* Content skeleton */}
       <div className="space-y-2 flex-grow">
-        <Skeleton className="h-4 w-full bg-muted" />
-        <Skeleton className="h-4 w-full bg-muted" />
-        <Skeleton className="h-4 w-2/3 bg-muted" />
+        <div className="h-4 w-full bg-muted rounded"></div>
+        <div className="h-4 w-full bg-muted rounded"></div>
+        <div className="h-4 w-2/3 bg-muted rounded"></div>
       </div>
 
       {/* Meta info skeleton */}
       <div className="flex gap-4 flex-shrink-0">
-        <Skeleton className="h-4 w-16 bg-muted" />
-        <Skeleton className="h-4 w-20 bg-muted" />
-        <Skeleton className="h-4 w-24 bg-muted" />
+        <div className="h-4 w-16 bg-muted rounded"></div>
+        <div className="h-4 w-20 bg-muted rounded"></div>
+        <div className="h-4 w-24 bg-muted rounded"></div>
       </div>
 
       {/* Tags skeleton */}
       <div className="flex gap-2 flex-shrink-0">
-        <Skeleton className="h-5 w-12 bg-muted" />
-        <Skeleton className="h-5 w-16 bg-muted" />
-        <Skeleton className="h-5 w-14 bg-muted" />
+        <div className="h-5 w-12 bg-muted rounded"></div>
+        <div className="h-5 w-16 bg-muted rounded"></div>
+        <div className="h-5 w-14 bg-muted rounded"></div>
       </div>
 
       {/* Buttons skeleton */}
       <div className="flex gap-2 flex-shrink-0 mt-auto">
-        <Skeleton className="h-8 flex-1 bg-muted" />
-        <Skeleton className="h-8 flex-1 bg-muted" />
+        <div className="h-8 flex-1 bg-muted rounded"></div>
+        <div className="h-8 flex-1 bg-muted rounded"></div>
       </div>
     </div>
   );

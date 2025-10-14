@@ -149,7 +149,29 @@ export default function ShowTag({ tag }: Props) {
                         </div>
                     </CardContent>
                 </Card>
-
+{Array.isArray((tag as any).translations) && (tag as any).translations.length > 0 ? (
+  <div className="pt-4 mt-2 border-t">
+    <p className="text-sm font-medium text-muted-foreground mb-2">Translations</p>
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+      {(tag as any).translations
+        .filter((row: any) => row.field === 'name') // ensure only tag.name translations
+        .map((row: any, idx: number) => (
+          <div key={idx} className="p-3 rounded-md border bg-muted/30">
+            <div className="text-xs text-muted-foreground mb-1">
+              {row.field} — {row.locale.toUpperCase()}
+            </div>
+            <div className="text-sm" dir={row.locale === 'ar' ? 'rtl' : 'ltr'}>
+              {row.locale === 'ar' ? `${row.value}` : row.value}
+            </div>
+          </div>
+        ))}
+    </div>
+  </div>
+) : (
+  <div className="pt-2">
+    <p className="text-sm text-muted-foreground">No translations found for this tag.</p>
+  </div>
+)}
                 {/* Associated Courses */}
                 <Card>
                     <CardHeader>

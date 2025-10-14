@@ -7,46 +7,29 @@ use Illuminate\Database\Eloquent\Collection;
 
 class TagRepository
 {
-    /**
-     * Get all tags
-     */
     public function getAll(): Collection
     {
-        return Tag::orderBy('name')->get();
+        return Tag::with('translations')->orderBy('name')->get(); // ← ADDED
     }
 
-    /**
-     * Get tags with course count
-     */
     public function getAllWithCourseCount(): Collection
     {
-        return Tag::withCount('courses')
+        return Tag::with('translations') // ← ADDED
+            ->withCount('courses')
             ->orderBy('name')
             ->get();
     }
 
-    /**
-     * Find tag by ID
-     */
     public function findById(int $id): ?Tag
     {
-        return Tag::find($id);
+        return Tag::with('translations')->find($id); // ← ADDED
     }
 
-    /**
-     * Find tag by slug
-     */
     public function findBySlug(string $slug): ?Tag
     {
-        return Tag::where('slug', $slug)->first();
+        return Tag::with('translations')->where('slug', $slug)->first(); // ← ADDED
     }
 
-    /**
-     * Find many tag IDs by their slugs
-     *
-     * @param  array<int,string> $slugs
-     * @return array<int,int>
-     */
     public function findIdsBySlugs(array $slugs): array
     {
         if (empty($slugs)) {
@@ -56,55 +39,39 @@ class TagRepository
         return Tag::whereIn('slug', $slugs)->pluck('id')->all();
     }
 
-    /**
-     * Get tags that have courses
-     */
     public function getTagsWithCourses(): Collection
     {
         return Tag::has('courses')
+            ->with('translations') // ← ADDED
             ->withCount('courses')
             ->orderBy('name')
             ->get();
     }
 
-    /**
-     * Get popular tags (most used)
-     */
     public function getPopularTags(int $limit = 10): Collection
     {
-        return Tag::withCount('courses')
+        return Tag::with('translations') // ← ADDED
+            ->withCount('courses')
             ->orderBy('courses_count', 'desc')
             ->limit($limit)
             ->get();
     }
 
-    /**
-     * Find tags by IDs
-     */
     public function findByIds(array $ids): Collection
     {
-        return Tag::whereIn('id', $ids)->get();
+        return Tag::with('translations')->whereIn('id', $ids)->get(); // ← ADDED
     }
 
-    /**
-     * Create a new tag
-     */
     public function create(array $data): Tag
     {
         return Tag::create($data);
     }
 
-    /**
-     * Update tag
-     */
     public function update(int $id, array $data): bool
     {
         return Tag::where('id', $id)->update($data);
     }
 
-    /**
-     * Delete tag
-     */
     public function delete(int $id): bool
     {
         return Tag::destroy($id) > 0;

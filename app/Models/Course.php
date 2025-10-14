@@ -5,9 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-
+use App\Models\Concerns\HasTranslations;
+use App\Models\Concerns\CastsTranslatable;
 class Course extends Model
 {
+    use HasTranslations, CastsTranslatable;
     protected $fillable = [
         'title',
         'description',
@@ -26,6 +28,8 @@ class Course extends Model
         'price'     => 'float',
     ];
 
+    protected array $translatable = ['title','description','platform','level'];
+
     protected $appends = [
         'image_url',
         'is_paid',
@@ -37,6 +41,10 @@ class Course extends Model
         return $this->image ? asset('storage/' . $this->image) : null;
     }
 
+        public function translations()
+    {
+        return $this->morphMany(\App\Models\Translation::class, 'translatable');
+    }
     public function getIsPaidAttribute(): bool
     {
         return $this->price !== null && $this->price > 0;

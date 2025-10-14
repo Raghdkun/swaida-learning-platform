@@ -63,7 +63,7 @@ Route::middleware(['auth', 'admin'])->group(function () {
         Route::post('/', [App\Http\Controllers\DashboardCourseController::class, 'store'])->name('store');
         Route::get('/{course}', [App\Http\Controllers\DashboardCourseController::class, 'show'])->name('show');
         Route::get('/{course}/edit', [App\Http\Controllers\DashboardCourseController::class, 'edit'])->name('edit');
-        Route::put('/{course}', [App\Http\Controllers\DashboardCourseController::class, 'update'])->name('update');
+        Route::post('/{course}', [App\Http\Controllers\DashboardCourseController::class, 'update'])->name('update');
         Route::delete('/{course}', [App\Http\Controllers\DashboardCourseController::class, 'destroy'])->name('destroy');
         Route::delete('/', [App\Http\Controllers\DashboardCourseController::class, 'bulkDestroy'])->name('bulk-destroy');
     });
