@@ -30,10 +30,9 @@ import { useTranslation } from '@/hooks/use-translation';
 interface HomeProps {
   featuredCourses: Course[];
   stats: {
-    totalCourses: number;
-    totalCategories: number;
-    totalPlatforms: number;
-    coursesWithCertificates: number;
+    total_courses: number;
+    total_categories: number;
+    platforms: any;
   };
   filterOptions: FilterOptions;
 }
@@ -142,7 +141,7 @@ export default function Home({ featuredCourses, stats, filterOptions }: HomeProp
           </div>
 
           {/* Stats Section */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8 sm:mb-12">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-8 sm:mb-12 max-w-5xl mx-auto">
             <Card className="border-border hover:shadow-md transition-all duration-300 hover:-translate-y-1 cursor-default">
               <CardContent className="p-4 sm:p-6">
                 <div className="flex items-center">
@@ -151,7 +150,7 @@ export default function Home({ featuredCourses, stats, filterOptions }: HomeProp
                   </div>
                   <div className="ml-3 sm:ml-4">
                     <p className="text-xs sm:text-sm font-medium text-muted-foreground">{t('home.stats.total_courses')}</p>
-                    <p className="text-xl sm:text-2xl font-bold text-foreground">{stats?.totalCourses || 0}</p>
+                    <p className="text-xl sm:text-2xl font-bold text-foreground">{stats?.total_courses || 0}</p>
                   </div>
                 </div>
               </CardContent>
@@ -165,7 +164,7 @@ export default function Home({ featuredCourses, stats, filterOptions }: HomeProp
                   </div>
                   <div className="ml-3 sm:ml-4">
                     <p className="text-xs sm:text-sm font-medium text-muted-foreground">{t('home.stats.categories')}</p>
-                    <p className="text-xl sm:text-2xl font-bold text-foreground">{stats?.totalCategories || 0}</p>
+                    <p className="text-xl sm:text-2xl font-bold text-foreground">{stats?.total_categories || 0}</p>
                   </div>
                 </div>
               </CardContent>
@@ -179,25 +178,13 @@ export default function Home({ featuredCourses, stats, filterOptions }: HomeProp
                   </div>
                   <div className="ml-3 sm:ml-4">
                     <p className="text-xs sm:text-sm font-medium text-muted-foreground">{t('home.stats.platforms')}</p>
-                    <p className="text-xl sm:text-2xl font-bold text-foreground">{stats?.totalPlatforms || 0}</p>
+                    <p className="text-xl sm:text-2xl font-bold text-foreground">{stats?.platforms.length || 0}</p>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="border-border hover:shadow-md transition-all duration-300 hover:-translate-y-1 cursor-default">
-              <CardContent className="p-4 sm:p-6">
-                <div className="flex items-center">
-                  <div className="p-2 bg-yellow-500/10 dark:bg-yellow-500/20 rounded-lg group-hover:scale-110 transition-transform duration-300">
-                    <Award className="h-5 w-5 sm:h-6 sm:w-6 text-yellow-600 dark:text-yellow-500" />
-                  </div>
-                  <div className="ml-3 sm:ml-4">
-                    <p className="text-xs sm:text-sm font-medium text-muted-foreground">{t('home.stats.with_certificates')}</p>
-                    <p className="text-xl sm:text-2xl font-bold text-foreground">{stats.coursesWithCertificates}</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+         
           </div>
 
           {/* Quick Search Section */}
